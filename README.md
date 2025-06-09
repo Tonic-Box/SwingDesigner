@@ -1,2 +1,4 @@
 # SwingDesigner
-A visual swing designer. Builkd with java 18+.
+A visual java swing ui designer.
+
+Build with java 18+
