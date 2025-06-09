@@ -5,12 +5,25 @@ import java.awt.*;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.util.Arrays;
+import java.util.Set;
 
 public class PropertyTableModel extends AbstractTableModel {
     private Component target;
     private PropertyDescriptor[] props = new PropertyDescriptor[0];
 
     private final Runnable onEdit;             // NEW
+
+    private final Set<String> hiddenProperties = Set.of(
+            "UI", "UIClassID", "accessibleContext", "actionMap",
+            "ancestorListeners", "baselineResizeBehavior", "component", "componentCount",
+            "components", "containerListeners", "debugGraphicsOption", "focusTraversalKeys",
+            "focusTraversalPolicy", "focusTraversalPolicyProvider", "focusTraversalPolicySet", "graphics",
+            "gridEnabled", "inputMap", "inputVerifier", "nextFocusableComponent", "registeredKeyStrokes",
+            "rootPane", "topLevelAncestor", "transferHandler", "vetoableChangeListeners",
+            "visibleRect"
+    );
+
     PropertyTableModel(Runnable onEdit){ this.onEdit = onEdit; }
 
     @Override public int getRowCount(){ return props.length; }
@@ -70,12 +83,18 @@ public class PropertyTableModel extends AbstractTableModel {
         return (row >= 0 && row < props.length) ? props[row] : null;
     }
 
-    void setTarget(Component comp){
-        this.target=comp;
-        if(comp==null){ props=new PropertyDescriptor[0]; }
-        else{
-            try{ props= Introspector.getBeanInfo(comp.getClass(),Object.class).getPropertyDescriptors(); }
-            catch(IntrospectionException e){ props=new PropertyDescriptor[0]; }
+    void setTarget(Component comp) {
+        this.target = comp;
+        if (comp == null) {
+            props = new PropertyDescriptor[0];
+        } else {
+            try {
+                props = Arrays.stream(Introspector.getBeanInfo(comp.getClass(), Object.class).getPropertyDescriptors())
+                        .filter(pd -> !hiddenProperties.contains(pd.getName()))
+                        .toArray(PropertyDescriptor[]::new);
+            } catch (IntrospectionException e) {
+                props = new PropertyDescriptor[0];
+            }
         }
         fireTableStructureChanged();
     }
