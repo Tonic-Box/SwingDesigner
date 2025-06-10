@@ -121,7 +121,6 @@ public class ComponentHierarchyPanel extends JPanel
     }
 
     @Override public void selectionChanged(Component c) {
-        // handled by the lambda above; no need to do anything here
     }
 
     private TreePath findPath(JComponent target) {

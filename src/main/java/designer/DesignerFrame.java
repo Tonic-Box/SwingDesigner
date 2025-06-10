@@ -6,11 +6,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 public class DesignerFrame extends JFrame {
-    private final ComponentPalettePanel palette      = new ComponentPalettePanel();
-    private final DesignSurfacePanel   designSurface = new DesignSurfacePanel();
-    private final PropertyInspectorPanel inspector   = new PropertyInspectorPanel(designSurface);
-    private final CodeViewPanel          codeView    = new CodeViewPanel();
-    private final PreviewPanel           preview     = new PreviewPanel(designSurface);
+    private final ComponentPalettePanel    palette       = new ComponentPalettePanel();
+    private final DesignSurfacePanel       designSurface = new DesignSurfacePanel();
+    private final PropertyInspectorPanel   inspector     = new PropertyInspectorPanel(designSurface);
+    private final CodeViewPanel            codeView      = new CodeViewPanel();
+    private final PreviewPanel             preview       = new PreviewPanel(designSurface);
 
     public DesignerFrame() {
         super("Swing Visual Designer");
@@ -22,28 +22,53 @@ public class DesignerFrame extends JFrame {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         JToggleButton gridToggle = new JToggleButton("Grid");
-        gridToggle.addActionListener(e -> {
-            designSurface.setGridEnabled(gridToggle.isSelected());
-        });
+        gridToggle.addActionListener(e -> designSurface.setGridEnabled(gridToggle.isSelected()));
         toolbar.add(gridToggle);
         add(toolbar, BorderLayout.NORTH);
 
+        // ─── LEFT COLUMN (Palette / Hierarchy above Inspector) ───────────
         JTabbedPane leftTabs = new JTabbedPane();
-        leftTabs.addTab("Palette",    palette);
-        leftTabs.addTab("Hierarchy",  new ComponentHierarchyPanel(designSurface));
+        leftTabs.addTab("Palette",   palette);
+        leftTabs.addTab("Hierarchy", new ComponentHierarchyPanel(designSurface));
 
-        // ─── SPLITS ──────────────────────────────────────────────────────
-        JSplitPane left  = new JSplitPane(JSplitPane.VERTICAL_SPLIT, leftTabs, inspector);
-        JSplitPane right = new JSplitPane(JSplitPane.VERTICAL_SPLIT, preview, codeView);
-        JSplitPane main  = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, designSurface);
-        JSplitPane outer = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, main, right);
-        left.setDividerLocation(300);
-        right.setDividerLocation(400);
-        main.setDividerLocation(260);
-        outer.setDividerLocation(900);
-        add(outer, BorderLayout.CENTER);
+        JSplitPane leftSplit = new JSplitPane(
+                JSplitPane.VERTICAL_SPLIT,
+                leftTabs,
+                inspector
+        );
+        leftSplit.setDividerLocation(300);
+        leftSplit.setResizeWeight(0.5);
 
-        /* Wiring */
+        // ─── CENTER COLUMN (Design *or* Preview) ────────────────────────
+        JTabbedPane centerTabs = new JTabbedPane();
+        centerTabs.addTab("Design",  designSurface);
+        centerTabs.addTab("Preview", preview);
+
+        // ─── RIGHT COLUMN (Code View) ──────────────────────────────────
+        // (we keep codeView full height on the right)
+
+        // ─── COMPOSE HORIZONTAL SPLITS ─────────────────────────────────
+        // First split: left vs. center
+        JSplitPane mainSplit = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT,
+                leftSplit,
+                centerTabs
+        );
+        mainSplit.setDividerLocation(260);
+        mainSplit.setResizeWeight(0.0); // left fixed, center expands
+
+        // Second split: (left+center) vs. codeView
+        JSplitPane outerSplit = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT,
+                mainSplit,
+                codeView
+        );
+        outerSplit.setDividerLocation(900);
+        outerSplit.setResizeWeight(1.0); // center expands, codeView fixed
+
+        add(outerSplit, BorderLayout.CENTER);
+
+        // ─── WIRING ─────────────────────────────────────────────────────
         designSurface.addSelectionListener(inspector::setTarget);
         designSurface.addDesignChangeListener(() -> {
             preview.refresh();
@@ -61,10 +86,10 @@ public class DesignerFrame extends JFrame {
             }
         });
 
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),  "nudgeLeft");
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0),  "nudgeRight");
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP,   0),  "nudgeUp");
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),  "nudgeDown");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,  0), "nudgeLeft");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "nudgeRight");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP,    0), "nudgeUp");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN,  0), "nudgeDown");
         am.put("nudgeLeft",  new NudgeAction(-1,  0));
         am.put("nudgeRight", new NudgeAction( 1,  0));
         am.put("nudgeUp",    new NudgeAction( 0, -1));
@@ -73,8 +98,8 @@ public class DesignerFrame extends JFrame {
 
     private class NudgeAction extends AbstractAction {
         private final int dx, dy;
-        NudgeAction(int dx, int dy){ this.dx = dx; this.dy = dy; }
-        public void actionPerformed(ActionEvent e){
+        NudgeAction(int dx, int dy) { this.dx = dx; this.dy = dy; }
+        public void actionPerformed(ActionEvent e) {
             designSurface.nudgeSelection(dx, dy);
         }
     }

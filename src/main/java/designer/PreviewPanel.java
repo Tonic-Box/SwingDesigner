@@ -19,7 +19,7 @@ class PreviewPanel extends JPanel {
 
         setPreferredSize(new Dimension(380,0));
         setBorder(new EmptyBorder(5,5,5,5));
-        add(new JLabel("Live Preview",SwingConstants.CENTER), BorderLayout.NORTH);
+        //add(new JLabel("Live Preview",SwingConstants.CENTER), BorderLayout.NORTH);
         add(new JScrollPane(canvas), BorderLayout.CENTER);
         refresh();
     }
