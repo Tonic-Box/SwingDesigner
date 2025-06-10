@@ -91,6 +91,7 @@ public class PropertyTableModel extends AbstractTableModel {
             try {
                 props = Arrays.stream(Introspector.getBeanInfo(comp.getClass(), Object.class).getPropertyDescriptors())
                         .filter(pd -> !hiddenProperties.contains(pd.getName()))
+                        .filter(pd -> !pd.getName().toLowerCase().contains("listener"))
                         .toArray(PropertyDescriptor[]::new);
             } catch (IntrospectionException e) {
                 props = new PropertyDescriptor[0];
