@@ -14,6 +14,9 @@ class PreviewPanel extends JPanel {
     PreviewPanel(DesignSurfacePanel ds){
         super(new BorderLayout());
         this.designSurface=ds;
+
+        designSurface.addDesignChangeListener(this::refresh);
+
         setPreferredSize(new Dimension(380,0));
         setBorder(new EmptyBorder(5,5,5,5));
         add(new JLabel("Live Preview",SwingConstants.CENTER), BorderLayout.NORTH);

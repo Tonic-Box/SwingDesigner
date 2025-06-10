@@ -250,64 +250,86 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         return sb.toString();
     }
 
-    /* recursive helper */
+    /**
+     * Recursively emits code for a container and *every* child component,
+     * including preferred/minimum/maximum size calls.
+     */
     private void emitContainer(Container cont, String var, StringBuilder sb, boolean isRoot) {
         if (isRoot) {
-            sb.append("JPanel ").append(var).append(" = new JPanel();\n");
-            // emit the root layout too:
-            sb.append(var).append(".setLayout(")
-                    .append(layoutExpr(cont.getLayout()))
-                    .append(");\n\n");
+            sb.append("JPanel ").append(var).append(" = new JPanel();\n")
+                    .append(var).append(".setLayout(").append(layoutExpr(cont.getLayout())).append(");\n\n");
         } else {
             sb.append(var).append(".setLayout(").append(layoutExpr(cont.getLayout())).append(");\n");
             Color bg = cont.getBackground();
-            if (bg != null)
+            if (bg != null) {
                 sb.append(var).append(".setBackground(new Color(0x")
-                        .append(String.format("%06X", bg.getRGB() & 0xFFFFFF))
-                        .append("));\n");
+                        .append(String.format("%06X", bg.getRGB() & 0xFFFFFF)).append("));\n");
+            }
+            sb.append("\n");
         }
+
+        // ─── now emit for each child ──────────────────────────────────
         for (Component c : cont.getComponents()) {
             if (!(c instanceof JComponent jc)) continue;
             String id = jc.getName();
-            sb.append(jc.getClass().getSimpleName()).append(' ').append(id)
+
+            // instantiate
+            sb.append(jc.getClass().getSimpleName()).append(" ").append(id)
                     .append(" = new ").append(jc.getClass().getSimpleName()).append("();\n");
 
-            if (jc instanceof AbstractButton but && but.getText() != null)
+            // button text
+            if (jc instanceof AbstractButton but && but.getText() != null) {
                 sb.append(id).append(".setText(\"")
                         .append(but.getText().replace("\"","\\\"")).append("\");\n");
-
-            sb.append(id).append(".setLayout(")
-                    .append(layoutExpr(jc.getLayout())).append(");\n");
-
-            Color bg = jc.getBackground(), fg = jc.getForeground();
-            if (bg != null)
-                sb.append(id).append(".setBackground(new Color(0x")
-                        .append(String.format("%06X", bg.getRGB() & 0xFFFFFF))
-                        .append("));\n");
-            if (fg != null)
-                sb.append(id).append(".setForeground(new Color(0x")
-                        .append(String.format("%06X", fg.getRGB() & 0xFFFFFF))
-                        .append("));\n");
-
-            PositionType posType = (PositionType) jc.getClientProperty("positionType");
-
-            if (posType == null) posType = PositionType.ABSOLUTE;
-
-            if (posType == PositionType.ABSOLUTE) {
-                Rectangle r = jc.getBounds();
-                sb.append(id).append(".setBounds(")
-                        .append(r.x).append(',').append(r.y).append(',')
-                        .append(r.width).append(',').append(r.height).append(");\n");
             }
 
+            // layout
+            sb.append(id).append(".setLayout(").append(layoutExpr(jc.getLayout())).append(");\n");
+
+            // background / foreground
+            Color bgc = jc.getBackground(), fgc = jc.getForeground();
+            if (bgc != null) {
+                sb.append(id).append(".setBackground(new Color(0x")
+                        .append(String.format("%06X", bgc.getRGB() & 0xFFFFFF)).append("));\n");
+            }
+            if (fgc != null) {
+                sb.append(id).append(".setForeground(new Color(0x")
+                        .append(String.format("%06X", fgc.getRGB() & 0xFFFFFF)).append("));\n");
+            }
+
+            // ─── preferred / minimum / maximum size ────────────────────
+            Dimension ps = jc.getPreferredSize();
+            if (ps != null) {
+                sb.append(id).append(".setPreferredSize(new Dimension(")
+                        .append(ps.width).append(", ").append(ps.height).append("));\n");
+            }
+            Dimension ms = jc.getMinimumSize();
+            if (ms != null) {
+                sb.append(id).append(".setMinimumSize(new Dimension(")
+                        .append(ms.width).append(", ").append(ms.height).append("));\n");
+            }
+            Dimension xs = jc.getMaximumSize();
+            if (xs != null) {
+                sb.append(id).append(".setMaximumSize(new Dimension(")
+                        .append(xs.width).append(", ").append(xs.height).append("));\n");
+            }
+
+            // position and add
+            PositionType pt = (PositionType) jc.getClientProperty("positionType");
+            if (pt == null) pt = PositionType.ABSOLUTE;
+            if (pt == PositionType.ABSOLUTE) {
+                Rectangle r = jc.getBounds();
+                sb.append(id).append(".setBounds(")
+                        .append(r.x).append(", ").append(r.y).append(", ")
+                        .append(r.width).append(", ").append(r.height).append(");\n");
+            }
             Object cons = jc.getClientProperty("layoutConstraint");
             String constraint = (cons != null
                     ? "BorderLayout." + cons.toString().toUpperCase()
                     : "BorderLayout.CENTER");
-            sb.append(var).append(".add(")
-                    .append(id).append(", ").append(constraint).append(");\n\n");
+            sb.append(var).append(".add(").append(id).append(", ").append(constraint).append(");\n\n");
 
-            // recurse into children (every JComponent is a Container)
+            // recurse
             if (jc.getComponentCount() > 0) {
                 emitContainer((Container) jc, id, sb, false);
             }

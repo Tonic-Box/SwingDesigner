@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
@@ -41,6 +42,8 @@ public class PropertyInspectorPanel extends JPanel {
             private final BorderCellEditor  borderEdit  = new BorderCellEditor();
             private final LayoutCellEditor  layoutEdit  = new LayoutCellEditor();
             private final BooleanCellEditor boolEdit    = new BooleanCellEditor();
+            private final DimensionCellRenderer dimRend = new DimensionCellRenderer();
+            private final DimensionCellEditor dimEdit = new DimensionCellEditor();
 
             @Override
             public TableCellRenderer getCellRenderer(int row, int col) {
@@ -48,8 +51,9 @@ public class PropertyInspectorPanel extends JPanel {
                     PropertyDescriptor pd = model.getPropertyDescriptor(row);
                     if (pd != null) {
                         Class<?> t = pd.getPropertyType();
-                        if (t == Color.class)                 return colorRend;
-                        if (t == Font.class)                  return fontRend;
+                        if (t == Dimension.class)                return dimRend;
+                        if (t == Color.class)                    return colorRend;
+                        if (t == Font.class)                     return fontRend;
                         if (t != null && Border.class.isAssignableFrom(t)) return borderRend;
                     }
                 }
@@ -62,11 +66,12 @@ public class PropertyInspectorPanel extends JPanel {
                     PropertyDescriptor pd = model.getPropertyDescriptor(row);
                     if (pd != null) {
                         Class<?> t = pd.getPropertyType();
-                        if (t == Color.class)                     return colorEdit;
-                        if (t == Font.class)                      return fontEdit;
-                        if (Border.class.isAssignableFrom(t))     return borderEdit;
-                        if (LayoutManager.class.isAssignableFrom(t)) return layoutEdit;
-                        if (t == Boolean.class || t == boolean.class) return boolEdit;
+                        if (t == Dimension.class)                      return dimEdit;
+                        if (t == Color.class)                          return colorEdit;
+                        if (t == Font.class)                           return fontEdit;
+                        if (Border.class.isAssignableFrom(t))           return borderEdit;
+                        if (LayoutManager.class.isAssignableFrom(t))    return layoutEdit;
+                        if (t == Boolean.class || t == boolean.class)   return boolEdit;
                     }
                 }
                 return super.getCellEditor(row, col);
@@ -150,12 +155,9 @@ public class PropertyInspectorPanel extends JPanel {
             }
         });
 
-        // Add positioning control to your UI:
         JPanel positionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         positionPanel.add(new JLabel("Position Type:"));
         positionPanel.add(positionCombo);
-
-        // Add positionPanel into inspector's UI stack:
         south.add(positionPanel);
 
         add(south, BorderLayout.SOUTH);
@@ -201,33 +203,22 @@ public class PropertyInspectorPanel extends JPanel {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // Inner classes for Font & Border editors/renderers
     static class FontCellRenderer extends JLabel implements TableCellRenderer {
         FontCellRenderer() { setOpaque(true); }
-        @Override public Component getTableCellRendererComponent(
-                JTable t, Object v, boolean sel, boolean foc, int r, int c) {
+        @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
             Font f = (v instanceof Font) ? (Font)v : null;
             setText(f != null ? f.getFontName() + " " + f.getSize() : "null");
-            setFont(f != null ? f : t.getFont());
-            return this;
+            setFont(f != null ? f : t.getFont()); return this;
         }
     }
 
     static class FontCellEditor extends AbstractCellEditor implements TableCellEditor {
         private Font current;
-        @Override public Object getCellEditorValue() {
-            return current;
-        }
-        @Override public Component getTableCellEditorComponent(
-                JTable t, Object v, boolean sel, int r, int c) {
+        @Override public Object getCellEditorValue() { return current; }
+        @Override public Component getTableCellEditorComponent(JTable t, Object v, boolean sel, int r, int c) {
             current = (v instanceof Font) ? (Font)v : t.getFont();
-            Font chosen = JFontChooser.showDialog(
-                    SwingUtilities.getWindowAncestor(t),
-                    "Choose Font",
-                    current
-            );
+            Font chosen = JFontChooser.showDialog(SwingUtilities.getWindowAncestor(t), "Choose Font", current);
             if (chosen != null) current = chosen;
-            // immediately stop editing so value is committed
             SwingUtilities.invokeLater(this::fireEditingStopped);
             return new JLabel(current.getFontName() + " " + current.getSize());
         }
@@ -235,32 +226,64 @@ public class PropertyInspectorPanel extends JPanel {
 
     static class BorderCellRenderer extends JLabel implements TableCellRenderer {
         BorderCellRenderer() { setOpaque(true); setText(" "); }
-        @Override public Component getTableCellRendererComponent(
-                JTable t, Object v, boolean sel, boolean foc, int r, int c) {
-            setBorder(v instanceof Border ? (Border)v : null);
-            return this;
+        @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foc, int r, int c) {
+            setBorder(v instanceof Border ? (Border)v : null); return this;
         }
     }
 
     static class BorderCellEditor extends AbstractCellEditor implements TableCellEditor {
         private Border current;
+        @Override public Object getCellEditorValue() { return current; }
+        @Override public Component getTableCellEditorComponent(JTable t, Object v, boolean sel, int r, int c) {
+            current = (v instanceof Border) ? (Border)v : null;
+            Border chosen = BorderChooser.showDialog(SwingUtilities.getWindowAncestor(t), "Choose Border", current);
+            if (chosen != null) current = chosen;
+            SwingUtilities.invokeLater(this::fireEditingStopped);
+            JLabel preview = new JLabel(" "); preview.setBorder(current);
+            return preview;
+        }
+    }
+
+    /** Renders Dimensions as W: x, H: x */
+    static class DimensionCellRenderer extends DefaultTableCellRenderer {
+        @Override protected void setValue(Object value) {
+            if (value instanceof Dimension) {
+                Dimension d = (Dimension)value;
+                setText("W: " + d.width + ", H: " + d.height);
+            } else super.setValue(value);
+        }
+    }
+
+    /** Edits Dimensions with a popup dialog */
+    static class DimensionCellEditor extends AbstractCellEditor implements TableCellEditor {
+        private Dimension current;
+
         @Override public Object getCellEditorValue() {
             return current;
         }
-        @Override public Component getTableCellEditorComponent(
-                JTable t, Object v, boolean sel, int r, int c) {
-            current = (v instanceof Border) ? (Border)v : null;
-            Border chosen = BorderChooser.showDialog(
-                    SwingUtilities.getWindowAncestor(t),
-                    "Choose Border",
-                    current
+
+        @Override public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            current = value instanceof Dimension ? (Dimension) value : new Dimension(0, 0);
+            JSpinner wSpinner = new JSpinner(new SpinnerNumberModel(current.width, 0, Integer.MAX_VALUE, 1));
+            JSpinner hSpinner = new JSpinner(new SpinnerNumberModel(current.height, 0, Integer.MAX_VALUE, 1));
+            JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+            panel.add(new JLabel("Width:")); panel.add(wSpinner);
+            panel.add(new JLabel("Height:")); panel.add(hSpinner);
+
+            int result = JOptionPane.showConfirmDialog(
+                    table,
+                    panel,
+                    "Edit Dimension",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE
             );
-            if (chosen != null) current = chosen;
+            if (result == JOptionPane.OK_OPTION) {
+                current = new Dimension((Integer) wSpinner.getValue(), (Integer) hSpinner.getValue());
+            }
+            // fire stop so setValueAt is invoked
             SwingUtilities.invokeLater(this::fireEditingStopped);
-            // show a small preview
-            JLabel preview = new JLabel(" ");
-            preview.setBorder(current);
-            return preview;
+            // return a preview label
+            return new JLabel(current != null ? "W: " + current.width + ", H: " + current.height : "");
         }
     }
 }
