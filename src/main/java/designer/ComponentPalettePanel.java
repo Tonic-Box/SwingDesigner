@@ -21,12 +21,8 @@ public class ComponentPalettePanel extends JPanel {
             JSpinner.class, JSlider.class, JProgressBar.class,
             // Scroll & split
             JScrollBar.class, JScrollPane.class, JSplitPane.class,
-            // Tabs & toolbars
-            JTabbedPane.class, JToolBar.class,
-            // Menus & popups
-            JMenuBar.class, JMenu.class, JMenuItem.class, JPopupMenu.class,
-            // Layered & desktop
-            JRootPane.class, JLayeredPane.class, JDesktopPane.class,
+            // Tabs
+            JTabbedPane.class,
             // Generic containers
             JPanel.class
     };
