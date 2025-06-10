@@ -28,17 +28,16 @@ public class DesignerFrame extends JFrame {
         toolbar.add(gridToggle);
         add(toolbar, BorderLayout.NORTH);
 
-        // ─── SPLITS ──────────────────────────────────────────────────────
-        //JSplitPane left  = new JSplitPane(JSplitPane.VERTICAL_SPLIT, palette, inspector);
-
         JTabbedPane leftTabs = new JTabbedPane();
         leftTabs.addTab("Palette",    palette);
         leftTabs.addTab("Hierarchy",  new ComponentHierarchyPanel(designSurface));
-        leftTabs.addTab("Properties", inspector);
 
+        // ─── SPLITS ──────────────────────────────────────────────────────
+        JSplitPane left  = new JSplitPane(JSplitPane.VERTICAL_SPLIT, leftTabs, inspector);
         JSplitPane right = new JSplitPane(JSplitPane.VERTICAL_SPLIT, preview, codeView);
-        JSplitPane main  = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftTabs, designSurface);
+        JSplitPane main  = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, designSurface);
         JSplitPane outer = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, main, right);
+        left.setDividerLocation(300);
         right.setDividerLocation(400);
         main.setDividerLocation(260);
         outer.setDividerLocation(900);

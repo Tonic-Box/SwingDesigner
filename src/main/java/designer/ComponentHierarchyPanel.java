@@ -1,10 +1,11 @@
 package designer;
 
 import javax.swing.*;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 public class ComponentHierarchyPanel extends JPanel
         implements DesignSurfacePanel.DesignChangeListener,
@@ -12,46 +13,41 @@ public class ComponentHierarchyPanel extends JPanel
 {
     private final DesignSurfacePanel surface;
     private final JTree tree;
-    private DefaultTreeModel model;
+    private final DefaultTreeModel model;
+
+    /** Prevents tree→surface→tree loops */
+    private boolean updatingFromSurface = false;
+    private final ComponentTreeCellRenderer renderer;
 
     public ComponentHierarchyPanel(DesignSurfacePanel surface) {
         super(new BorderLayout());
         this.surface = surface;
 
-        // initial tree model
+        // build model & tree
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(surface);
         model = new DefaultTreeModel(root);
-        tree = new JTree(model);
+        tree  = new JTree(model);
         tree.setRootVisible(true);
-        tree.setCellRenderer(new DefaultTreeCellRenderer() {
-            @Override public Component getTreeCellRendererComponent(
-                    JTree t, Object value, boolean sel, boolean exp,
-                    boolean leaf, int row, boolean hasFocus)
-            {
-                super.getTreeCellRendererComponent(t, value, sel, exp, leaf, row, hasFocus);
-                Object uo = ((DefaultMutableTreeNode)value).getUserObject();
-                if (uo instanceof JComponent jc) {
-                    setText(jc.getName());
-                } else {
-                    setText("Design Surface");
-                }
-                return this;
-            }
-        });
 
-        add(new JScrollPane(tree), BorderLayout.CENTER);
+        renderer = new ComponentTreeCellRenderer();
+        tree.setCellRenderer(renderer);
 
-        // rebuild whenever the design changes
-        surface.addDesignChangeListener(this);
-        // highlight in tree whenever selection changes
-        surface.addSelectionListener(this);
-
-        // if user clicks in the tree, select that component on surface
-        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        // 1) Tree → Surface
+        tree.getSelectionModel()
+                .setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         tree.addTreeSelectionListener(e -> {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
+            // only skip if *we* are driving the change
+            if (updatingFromSurface) return;
+
+            DefaultMutableTreeNode node =
+                    (DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
             if (node == null) return;
+
             Object uo = node.getUserObject();
+
+            renderer.setSelectedObject(uo);
+            tree.repaint();
+
             if (uo instanceof JComponent jc) {
                 surface.setSelectedComponent(jc);
             } else {
@@ -59,15 +55,53 @@ public class ComponentHierarchyPanel extends JPanel
             }
         });
 
+        // 2) Surface → Tree
+        surface.addSelectionListener(c -> SwingUtilities.invokeLater(() -> {
+            updatingFromSurface = true;
+
+            renderer.setSelectedObject(c);
+
+            if (!(c instanceof JComponent)) {
+                tree.clearSelection();
+            } else {
+                TreePath p = findPath((JComponent)c);
+                if (p != null) {
+                    tree.setSelectionPath(p);
+                    tree.scrollPathToVisible(p);
+                }
+            }
+            updatingFromSurface = false;
+        }));
+
+        surface.addDesignChangeListener(this);
+        add(new JScrollPane(tree), BorderLayout.CENTER);
         rebuildTree();
     }
 
     private void rebuildTree() {
+        // 1) remember all the userObjects whose paths are currently expanded
+        List<Object> expanded = new ArrayList<>();
+        for (int row = 0; row < tree.getRowCount(); row++) {
+            TreePath path = tree.getPathForRow(row);
+            if (tree.isExpanded(path)) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+                expanded.add(node.getUserObject());
+            }
+        }
+
+        // 2) rebuild the model from scratch
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(surface);
         buildNode(root, surface);
         model.setRoot(root);
         model.reload();
-        tree.expandRow(0);
+
+        // 3) re-expand each of the previously expanded userObjects
+        for (Object uo : expanded) {
+            TreePath p = findPath(uo);
+            if (p != null) {
+                tree.expandPath(p);
+            }
+        }
     }
 
     private void buildNode(DefaultMutableTreeNode parent, Container cont) {
@@ -82,21 +116,12 @@ public class ComponentHierarchyPanel extends JPanel
         }
     }
 
-    // → DesignChangeListener
     @Override public void designChanged() {
         SwingUtilities.invokeLater(this::rebuildTree);
     }
 
-    // → SelectionListener
     @Override public void selectionChanged(Component c) {
-        SwingUtilities.invokeLater(() -> {
-            if (!(c instanceof JComponent)) {
-                tree.clearSelection();
-                return;
-            }
-            TreePath path = findPath((JComponent)c);
-            if (path != null) tree.setSelectionPath(path);
-        });
+        // handled by the lambda above; no need to do anything here
     }
 
     private TreePath findPath(JComponent target) {
@@ -104,8 +129,21 @@ public class ComponentHierarchyPanel extends JPanel
         Enumeration<TreeNode> e = root.breadthFirstEnumeration();
         while (e.hasMoreElements()) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode)e.nextElement();
-            if (node.getUserObject() == target)
+            if (node.getUserObject() == target) {
                 return new TreePath(node.getPath());
+            }
+        }
+        return null;
+    }
+
+    private TreePath findPath(Object userObject) {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
+        Enumeration<TreeNode> e = root.breadthFirstEnumeration();
+        while (e.hasMoreElements()) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode)e.nextElement();
+            if (node.getUserObject() == userObject) {
+                return new TreePath(node.getPath());
+            }
         }
         return null;
     }
