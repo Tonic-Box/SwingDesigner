@@ -34,6 +34,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                     selectedComp = null;
                 }
                 notifySelection(selectedComp);
+                repaint();
             }
         });
     }
@@ -70,17 +71,50 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
     }
 
     @Override
+    protected void paintChildren(Graphics g) {
+        super.paintChildren(g);
+
+        if (selectedComp != null) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            try {
+                g2.setColor(Color.ORANGE);
+                float[] dash = {4f, 4f};
+                g2.setStroke(new BasicStroke(
+                        2f,
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_MITER,
+                        1f, dash, 0f
+                ));
+
+                // convert the child’s bounds into surface coords
+                Rectangle r = SwingUtilities.convertRectangle(
+                        selectedComp.getParent(),
+                        selectedComp.getBounds(),
+                        this
+                );
+
+                // inset by 1 so stroke is fully visible inside the component
+                g2.drawRect(r.x + 1, r.y + 1, r.width - 3, r.height - 3);
+            } finally {
+                g2.dispose();
+            }
+        }
+    }
+
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (!gridEnabled) return;
-        Graphics2D g2 = (Graphics2D)g.create();
-        g2.setColor(new Color(100,100,100,40));
-        int w = getWidth(), h = getHeight();
-        for (int x = 0; x < w; x += GRID_SPAN)
-            g2.drawLine(x, 0, x, h);
-        for (int y = 0; y < h; y += GRID_SPAN)
-            g2.drawLine(0, y, w, y);
-        g2.dispose();
+
+        // draw grid if enabled
+        if (gridEnabled) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setColor(new Color(100,100,100,40));
+            for (int x = 0; x < getWidth(); x += GRID_SPAN)
+                g2.drawLine(x, 0, x, getHeight());
+            for (int y = 0; y < getHeight(); y += GRID_SPAN)
+                g2.drawLine(0, y, getWidth(), y);
+            g2.dispose();
+        }
     }
 
     private void snapBounds(Rectangle r) {
@@ -129,6 +163,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
             comp.putClientProperty("positionType", PositionType.ABSOLUTE);
 
+            this.selectedComp = comp;
             notifySelection(comp);
             notifyChange();
             e.dropComplete(true);
@@ -457,6 +492,10 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 dragOffset = null;
             }
             notifySelection(target);
+
+            DesignSurfacePanel.this.selectedComp = target;
+            DesignSurfacePanel.this.notifySelection(target);
+            DesignSurfacePanel.this.repaint();
         }
         @Override
         public void mouseReleased(MouseEvent e) {
