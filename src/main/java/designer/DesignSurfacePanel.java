@@ -70,6 +70,15 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         }
     }
 
+    public void setSelectedComponent(JComponent c) {
+        this.selectedComp = c;
+        notifySelection(c);
+        repaint();
+    }
+    public void clearSelection() {
+        setSelectedComponent(null);
+    }
+
     @Override
     protected void paintChildren(Graphics g) {
         super.paintChildren(g);
