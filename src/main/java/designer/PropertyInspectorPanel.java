@@ -51,9 +51,10 @@ public class PropertyInspectorPanel extends JPanel {
                     PropertyDescriptor pd = model.getPropertyDescriptor(row);
                     if (pd != null) {
                         Class<?> t = pd.getPropertyType();
-                        if (t == Dimension.class)                return dimRend;
-                        if (t == Color.class)                    return colorRend;
-                        if (t == Font.class)                     return fontRend;
+                        if (t == JPopupMenu.class)                 return new PopupMenuCellRenderer();
+                        if (t == Dimension.class)                  return dimRend;
+                        if (t == Color.class)                      return colorRend;
+                        if (t == Font.class)                       return fontRend;
                         if (t != null && Border.class.isAssignableFrom(t)) return borderRend;
                     }
                 }
@@ -66,12 +67,13 @@ public class PropertyInspectorPanel extends JPanel {
                     PropertyDescriptor pd = model.getPropertyDescriptor(row);
                     if (pd != null) {
                         Class<?> t = pd.getPropertyType();
-                        if (t == Dimension.class)                      return dimEdit;
-                        if (t == Color.class)                          return colorEdit;
-                        if (t == Font.class)                           return fontEdit;
-                        if (Border.class.isAssignableFrom(t))           return borderEdit;
-                        if (LayoutManager.class.isAssignableFrom(t))    return layoutEdit;
-                        if (t == Boolean.class || t == boolean.class)   return boolEdit;
+                        if (t == JPopupMenu.class)                 return new PopupMenuCellEditor();
+                        if (t == Dimension.class)                  return dimEdit;
+                        if (t == Color.class)                      return colorEdit;
+                        if (t == Font.class)                       return fontEdit;
+                        if (Border.class.isAssignableFrom(t))      return borderEdit;
+                        if (LayoutManager.class.isAssignableFrom(t)) return layoutEdit;
+                        if (t == Boolean.class || t == boolean.class) return boolEdit;
                     }
                 }
                 return super.getCellEditor(row, col);
@@ -284,6 +286,72 @@ public class PropertyInspectorPanel extends JPanel {
             SwingUtilities.invokeLater(this::fireEditingStopped);
             // return a preview label
             return new JLabel(current != null ? "W: " + current.width + ", H: " + current.height : "");
+        }
+    }
+
+    /** Renders the selected popup menu name in the cell */
+    static class PopupMenuCellRenderer extends DefaultTableCellRenderer {
+        @Override protected void setValue(Object value) {
+            if (value instanceof JPopupMenu) {
+                // find the name by identity
+                String name = PopupMenuManager.getMenuNames().stream()
+                        .filter(n -> PopupMenuManager.getMenu(n) == value)
+                        .findFirst().orElse("<None>");
+                setText(name);
+            } else {
+                setText("<None>");
+            }
+        }
+    }
+
+    static class PopupMenuCellEditor extends AbstractCellEditor implements TableCellEditor {
+        private final JComboBox<String> combo = new JComboBox<>();
+
+        PopupMenuCellEditor() {
+            reloadItems();
+            combo.addActionListener(e -> {
+                String sel = (String)combo.getSelectedItem();
+                if ("<New>".equals(sel)) {
+                    // user wants to create a new menu
+                    PopupMenuEditorDialog.showDialog(null);
+                    reloadItems();
+                    combo.showPopup();
+                } else {
+                    // immediately commit any normal choice
+                    fireEditingStopped();
+                }
+            });
+        }
+
+        private void reloadItems() {
+            combo.removeAllItems();
+            combo.addItem("<None>");
+            PopupMenuManager.getMenuNames().forEach(combo::addItem);
+            combo.addItem("<New>");
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                                                     boolean isSelected, int row, int col) {
+            // pre select the current menu
+            String current = "<None>";
+            if (value instanceof JPopupMenu) {
+                for (String n : PopupMenuManager.getMenuNames()) {
+                    if (PopupMenuManager.getMenu(n) == value) {
+                        current = n;
+                        break;
+                    }
+                }
+            }
+            combo.setSelectedItem(current);
+            return combo;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            String sel = (String)combo.getSelectedItem();
+            if ("<None>".equals(sel)) return null;
+            return PopupMenuManager.getMenu(sel);
         }
     }
 }

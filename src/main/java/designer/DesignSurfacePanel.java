@@ -246,6 +246,21 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
     /* ───── Simple code generation (Java Swing) ───── */
     String generateCode() {
         StringBuilder sb = new StringBuilder("// ---- auto-generated layout ----\n");
+        for (String name : PopupMenuManager.getMenuNames()) {
+            String var = name.replaceAll("\\W+", "_");
+            sb.append("JPopupMenu ").append(var)
+                    .append(" = new JPopupMenu();\n");
+            JPopupMenu pm = PopupMenuManager.getMenu(name);
+            for (Component mi : pm.getComponents()) {
+                if (mi instanceof JMenuItem item) {
+                    sb.append(var)
+                            .append(".add(new JMenuItem(\"")
+                            .append(item.getText().replace("\"", "\\\""))
+                            .append("\"));\n");
+                }
+            }
+            sb.append("\n");
+        }
         emitContainer(this, "panel", sb, true);
         return sb.toString();
     }
@@ -295,6 +310,17 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             if (fgc != null) {
                 sb.append(id).append(".setForeground(new Color(0x")
                         .append(String.format("%06X", fgc.getRGB() & 0xFFFFFF)).append("));\n");
+            }
+
+            // popup-menu by reference
+            JPopupMenu pmRef = jc.getComponentPopupMenu();
+            if (pmRef != null) {
+                String varMenu = PopupMenuManager.getMenuNames().stream()
+                        .filter(n -> PopupMenuManager.getMenu(n) == pmRef).findFirst()
+                        .map(n -> n.replaceAll("\\W+", "_"))
+                        .orElseThrow();
+                sb.append(id).append(".setComponentPopupMenu(")
+                        .append(varMenu).append(");\n");
             }
 
             // ─── preferred / minimum / maximum size ────────────────────
@@ -406,9 +432,15 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         }
 
         /* helper: show popup across platforms */
-        private void maybeShowPopup(MouseEvent e){
-            if (e.isPopupTrigger()){
-                popup.show(e.getComponent(), e.getX(), e.getY());
+        private void maybeShowPopup(MouseEvent e) {
+            if (!e.isPopupTrigger()) return;
+            // if user has set a JPopupMenu on this component, show it instead
+            JPopupMenu pm = target.getComponentPopupMenu();
+            if (pm != null) {
+                pm.show(target, e.getX(), e.getY());
+            } else {
+                // your existing designer menu
+                popup.show(target, e.getX(), e.getY());
             }
         }
 

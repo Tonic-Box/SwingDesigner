@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e13dc844-16a2-4ea5-9539-79fcfc4c4cdf" name="Changes" comment="implement filter for properties to hide all the props that are irrelevant.">
+    <list default="true" id="e13dc844-16a2-4ea5-9539-79fcfc4c4cdf" name="Changes" comment="UI based dimension setting">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/designer/DesignSurfacePanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/DesignSurfacePanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/designer/PreviewPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/PreviewPanel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/designer/PropertyInspectorPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/PropertyInspectorPanel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -90,11 +89,20 @@
       <option name="project" value="LOCAL" />
       <updated>1749503756401</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="UI based dimension setting">
+      <option name="closed" value="true" />
+      <created>1749532266087</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1749532266087</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="implement filter for properties to hide all the props that are irrelevant." />
-    <option name="LAST_COMMIT_MESSAGE" value="implement filter for properties to hide all the props that are irrelevant." />
+    <MESSAGE value="UI based dimension setting" />
+    <option name="LAST_COMMIT_MESSAGE" value="UI based dimension setting" />
   </component>
 </project>
