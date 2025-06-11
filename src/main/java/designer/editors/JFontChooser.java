@@ -1,9 +1,7 @@
-package designer;
+package designer.editors;
 
 import javax.swing.*;
-import javax.swing.border.*;
 import java.awt.*;
-import java.awt.event.*;
 
 /**
  * A simple font chooser dialog.

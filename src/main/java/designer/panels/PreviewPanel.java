@@ -1,4 +1,6 @@
-package designer;
+package designer.panels;
+
+import designer.panels.DesignSurfacePanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -8,10 +10,10 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 
-class PreviewPanel extends JPanel {
+public class PreviewPanel extends JPanel {
     private final DesignSurfacePanel designSurface;
     private final JPanel canvas = new JPanel(null);
-    PreviewPanel(DesignSurfacePanel ds){
+    public PreviewPanel(DesignSurfacePanel ds){
         super(new BorderLayout());
         this.designSurface=ds;
 
@@ -23,7 +25,7 @@ class PreviewPanel extends JPanel {
         add(new JScrollPane(canvas), BorderLayout.CENTER);
         refresh();
     }
-    void refresh() {
+    public void refresh() {
         canvas.removeAll();
         canvas.setBackground(designSurface.getBackground());
         canvas.setLayout(designSurface.getLayout());

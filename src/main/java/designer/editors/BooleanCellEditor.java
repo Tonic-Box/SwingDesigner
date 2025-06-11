@@ -1,4 +1,4 @@
-package designer;
+package designer.editors;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -7,7 +7,7 @@ import java.awt.*;
 public class BooleanCellEditor extends AbstractCellEditor implements TableCellEditor {
     private final JComboBox<String> combo = new JComboBox<>(new String[]{"false","true"});
 
-    BooleanCellEditor() {
+    public BooleanCellEditor() {
         combo.addActionListener(e -> fireEditingStopped());
     }
 

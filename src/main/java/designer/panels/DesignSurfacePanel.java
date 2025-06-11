@@ -1,6 +1,9 @@
-package designer;
+package designer.panels;
 
+import designer.misc.PopupMenuManager;
+import designer.SwingDesignerApp;
 import designer.model.*;
+import designer.types.PositionType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +25,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
     private final List<SelectionListener>    selectL = new ArrayList<>();
     private final AtomicInteger idSeq   = new AtomicInteger();
 
-    DesignSurfacePanel() {
+    public DesignSurfacePanel() {
         super(null);
         setBackground(new Color(SwingDesignerApp.BG_DARK.getRGB()));
         setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
@@ -193,7 +196,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
      *  2) re-apply client-property constraints for every BorderLayout,
      *  3) fire our designChanged listeners.
      */
-    void externalPropertyChanged() {
+    public void externalPropertyChanged() {
         ensureUniqueNames();
         reapplyConstraints(this);
         notifyChange();
@@ -286,13 +289,13 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
     }
 
     /* ───── Observers ───── */
-    void addDesignChangeListener(DesignChangeListener l){ changeL.add(l);}
-    void addSelectionListener   (SelectionListener    l){ selectL.add(l);}
+    public void addDesignChangeListener(DesignChangeListener l){ changeL.add(l);}
+    public void addSelectionListener(SelectionListener l){ selectL.add(l);}
     private void notifyChange()   { revalidate(); repaint(); changeL.forEach(DesignChangeListener::designChanged);}
     private void notifySelection(Component c){ selectL .forEach(l -> l.selectionChanged(c)); }
 
     /* ───── Simple code generation (Java Swing) ───── */
-    String generateCode() {
+    public String generateCode() {
         StringBuilder sb = new StringBuilder("// ---- auto-generated layout ----\n");
         for (String name : PopupMenuManager.getMenuNames()) {
             String var = name.replaceAll("\\W+", "_");
@@ -583,8 +586,8 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
 
     /* ───── helper classes ───── */
-    @FunctionalInterface interface DesignChangeListener { void designChanged(); }
-    @FunctionalInterface interface SelectionListener    { void selectionChanged(Component c); }
+    @FunctionalInterface public interface DesignChangeListener { void designChanged(); }
+    @FunctionalInterface public interface SelectionListener    { void selectionChanged(Component c); }
 
     /* ───── Component-level mouse adapter for move + resize + context menu ───── */
     private class MoveResizeAdapter extends MouseAdapter {

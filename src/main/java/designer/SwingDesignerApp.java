@@ -1,14 +1,15 @@
 package designer;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+import designer.panels.DesignerFrame;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class SwingDesignerApp {
-    /* --- colour palette --- */
-    static final Color BG_DARK   = new Color(0x2B2B2B);
-    static final Color BG_PANEL  = new Color(0x313335);
-    static final Color FG_LIGHT  = new Color(0xE0E0E0);
+    public static final Color BG_DARK   = new Color(0x2B2B2B);
+    public static final Color BG_PANEL  = new Color(0x313335);
+    public static final Color FG_LIGHT  = new Color(0xE0E0E0);
 
     public static void main(String[] args) {
         FlatDarkLaf.setup();

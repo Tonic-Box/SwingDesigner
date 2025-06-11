@@ -1,4 +1,6 @@
-package designer;
+package designer.panels;
+
+import designer.misc.ComponentTreeCellRenderer;
 
 import javax.swing.*;
 import javax.swing.tree.*;

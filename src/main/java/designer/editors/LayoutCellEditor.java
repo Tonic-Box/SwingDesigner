@@ -1,4 +1,6 @@
-package designer;
+package designer.editors;
+
+import designer.types.Layouts;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -7,7 +9,7 @@ import java.awt.*;
 public class LayoutCellEditor extends AbstractCellEditor implements TableCellEditor {
     private final JComboBox<String> combo = new JComboBox<>(Layouts.NAMES);
 
-    LayoutCellEditor() {
+    public LayoutCellEditor() {
         combo.addActionListener(e -> fireEditingStopped());
     }
 

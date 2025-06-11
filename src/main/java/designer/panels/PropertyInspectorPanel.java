@@ -1,4 +1,10 @@
-package designer;
+package designer.panels;
+
+import designer.editors.*;
+import designer.misc.ColorCellRenderer;
+import designer.misc.PopupMenuManager;
+import designer.misc.PropertyTableModel;
+import designer.types.PositionType;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -35,12 +41,12 @@ public class PropertyInspectorPanel extends JPanel {
         // ─── property table ─────────────────────────────────────────
         JTable table = new JTable(model) {
             private final ColorCellRenderer colorRend   = new ColorCellRenderer();
-            private final ColorCellEditor   colorEdit   = new ColorCellEditor();
+            private final ColorCellEditor colorEdit   = new ColorCellEditor();
             private final FontCellRenderer  fontRend    = new FontCellRenderer();
             private final FontCellEditor    fontEdit    = new FontCellEditor();
             private final BorderCellRenderer borderRend  = new BorderCellRenderer();
             private final BorderCellEditor  borderEdit  = new BorderCellEditor();
-            private final LayoutCellEditor  layoutEdit  = new LayoutCellEditor();
+            private final LayoutCellEditor layoutEdit  = new LayoutCellEditor();
             private final BooleanCellEditor boolEdit    = new BooleanCellEditor();
             private final DimensionCellRenderer dimRend = new DimensionCellRenderer();
             private final DimensionCellEditor dimEdit = new DimensionCellEditor();

@@ -1,11 +1,11 @@
-package designer;
+package designer.misc;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
 public class ColorCellRenderer extends JLabel implements TableCellRenderer {
-    ColorCellRenderer(){ setOpaque(true); setHorizontalAlignment(CENTER); }
+    public ColorCellRenderer(){ setOpaque(true); setHorizontalAlignment(CENTER); }
     @Override public Component getTableCellRendererComponent(
             JTable t,Object v,boolean sel,boolean foc,int r,int c){
         Color col = (v instanceof Color) ? (Color)v : null;

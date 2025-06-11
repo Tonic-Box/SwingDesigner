@@ -1,12 +1,12 @@
-package designer;
+package designer.panels;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-class CodeViewPanel extends JPanel {
+public class CodeViewPanel extends JPanel {
     private final JTextArea area = new JTextArea();
-    CodeViewPanel(){
+    public CodeViewPanel(){
         super(new BorderLayout());
         setBorder(new EmptyBorder(5,5,5,5));
         add(new JLabel("Generated Code"), BorderLayout.NORTH);
@@ -14,5 +14,5 @@ class CodeViewPanel extends JPanel {
         area.setEditable(false);
         add(new JScrollPane(area), BorderLayout.CENTER);
     }
-    void setCode(String code){ area.setText(code); }
+    public void setCode(String code){ area.setText(code); }
 }

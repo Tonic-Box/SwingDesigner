@@ -1,4 +1,4 @@
-package designer;
+package designer.panels;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -27,7 +27,7 @@ public class ComponentPalettePanel extends JPanel {
             JPanel.class
     };
 
-    ComponentPalettePanel() {
+    public ComponentPalettePanel() {
         super(new BorderLayout());
         setBorder(new EmptyBorder(5,5,5,5));
         add(new JLabel("Component Palette"), BorderLayout.NORTH);

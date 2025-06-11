@@ -1,11 +1,11 @@
-package designer;
+package designer.types;
 
 import java.awt.*;
 
 public final class Layouts {
-    static final String[] NAMES = { "Absolute", "FlowLayout", "BorderLayout", "GridLayout" };
+    public static final String[] NAMES = { "Absolute", "FlowLayout", "BorderLayout", "GridLayout" };
 
-    static LayoutManager fromName(String n){
+    public static LayoutManager fromName(String n){
         return switch (n){
             case "Absolute"     -> null;
             case "FlowLayout"   -> new FlowLayout();
@@ -14,7 +14,7 @@ public final class Layouts {
             default             -> null;
         };
     }
-    static String toName(LayoutManager lm){
+    public static String toName(LayoutManager lm){
         if(lm==null)                return "Absolute";
         return switch (lm.getClass().getSimpleName()){
             case "FlowLayout"   -> "FlowLayout";

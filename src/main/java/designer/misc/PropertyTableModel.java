@@ -1,4 +1,4 @@
-package designer;
+package designer.misc;
 
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
@@ -24,7 +24,7 @@ public class PropertyTableModel extends AbstractTableModel {
             "visibleRect"
     );
 
-    PropertyTableModel(Runnable onEdit){ this.onEdit = onEdit; }
+    public PropertyTableModel(Runnable onEdit){ this.onEdit = onEdit; }
 
     @Override public int getRowCount(){ return props.length; }
     @Override public int getColumnCount(){ return 2; }
@@ -79,11 +79,11 @@ public class PropertyTableModel extends AbstractTableModel {
         return target;
     }
 
-    PropertyDescriptor getPropertyDescriptor(int row) {
+    public PropertyDescriptor getPropertyDescriptor(int row) {
         return (row >= 0 && row < props.length) ? props[row] : null;
     }
 
-    void setTarget(Component comp) {
+    public void setTarget(Component comp) {
         this.target = comp;
         if (comp == null) {
             props = new PropertyDescriptor[0];

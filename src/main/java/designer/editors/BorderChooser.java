@@ -1,4 +1,4 @@
-package designer;
+package designer.editors;
 
 import javax.swing.*;
 import javax.swing.border.Border;

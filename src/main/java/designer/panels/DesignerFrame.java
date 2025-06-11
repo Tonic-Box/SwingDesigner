@@ -1,6 +1,7 @@
-package designer;
+package designer.panels;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import designer.misc.PopupMenuManager;
 import designer.model.MenuItemData;
 import designer.model.PopupMenuData;
 import designer.model.ProjectData;
@@ -20,10 +21,10 @@ public class DesignerFrame extends JFrame {
     private File lastDirectory;
     private final JFileChooser fileChooser;
     private final ObjectMapper mapper = new ObjectMapper();
-    private       DesignSurfacePanel designSurface;      // no longer final
+    private DesignSurfacePanel designSurface;      // no longer final
     private final PropertyInspectorPanel inspector;
     private final CodeViewPanel codeView;
-    private       PreviewPanel preview;                  // no longer final
+    private PreviewPanel preview;                  // no longer final
 
     private final JTabbedPane centerTabs;
 

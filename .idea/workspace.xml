@@ -4,8 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e13dc844-16a2-4ea5-9539-79fcfc4c4cdf" name="Changes" comment="Functionality for saving/opening projects: Fixed bugs wth popup menus not making the round trip correctly with saving/loading">
+    <list default="true" id="e13dc844-16a2-4ea5-9539-79fcfc4c4cdf" name="Changes" comment="Added a window icon">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/CodeViewPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/panels/CodeViewPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/ComponentHierarchyPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/panels/ComponentHierarchyPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/ComponentPalettePanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/panels/ComponentPalettePanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/DesignSurfacePanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/panels/DesignSurfacePanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/DesignerFrame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/DesignerFrame.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/LayoutCellEditor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/LayoutCellEditor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/Layouts.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/types/Layouts.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/PositionType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/types/PositionType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/PreviewPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/panels/PreviewPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/PropertyInspectorPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/PropertyInspectorPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/SwingDesignerApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/SwingDesignerApp.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,7 +67,7 @@
       <module name="SwingDesigner.main" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="designer.*" />
+          <option name="PATTERN" value="designer.types.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -143,7 +154,15 @@
       <option name="project" value="LOCAL" />
       <updated>1749610427392</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Added a window icon">
+      <option name="closed" value="true" />
+      <created>1749611017443</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1749611017443</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -153,6 +172,7 @@
     <MESSAGE value="Hierarchy tree, ui rework" />
     <MESSAGE value="Functionality for saving/opening projects" />
     <MESSAGE value="Functionality for saving/opening projects: Fixed bugs wth popup menus not making the round trip correctly with saving/loading" />
-    <option name="LAST_COMMIT_MESSAGE" value="Functionality for saving/opening projects: Fixed bugs wth popup menus not making the round trip correctly with saving/loading" />
+    <MESSAGE value="Added a window icon" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added a window icon" />
   </component>
 </project>
