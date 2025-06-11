@@ -5,10 +5,12 @@ import designer.model.MenuItemData;
 import designer.model.PopupMenuData;
 import designer.model.ProjectData;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,7 @@ public class DesignerFrame extends JFrame {
     public DesignerFrame() {
         super("Swing Visual Designer");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setIconImage(loadImageResource(DesignerFrame.class, "icon.png"));
         setSize(1400, 850);
         setLocationRelativeTo(null);
 
@@ -93,6 +96,22 @@ public class DesignerFrame extends JFrame {
 
         // ─── WIRING (listeners, keybindings) ───────────────────────
         setupListenersAndBindings();
+    }
+
+    public static BufferedImage loadImageResource(final Class<?> c, final String path)
+    {
+        try (InputStream in = c.getResourceAsStream(path))
+        {
+            assert in != null;
+            synchronized (ImageIO.class)
+            {
+                return ImageIO.read(in);
+            }
+        }
+        catch (Exception e)
+        {
+        }
+        return null;
     }
 
     /** Wire up all your listeners and keybindings. */

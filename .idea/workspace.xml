@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="e13dc844-16a2-4ea5-9539-79fcfc4c4cdf" name="Changes" comment="Functionality for saving/opening projects: Fixed bugs wth popup menus not making the round trip correctly with saving/loading">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/designer/DesignerFrame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/DesignerFrame.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -136,7 +135,15 @@
       <option name="project" value="LOCAL" />
       <updated>1749607981062</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Functionality for saving/opening projects: Fixed bugs wth popup menus not making the round trip correctly with saving/loading">
+      <option name="closed" value="true" />
+      <created>1749610427392</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1749610427392</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
