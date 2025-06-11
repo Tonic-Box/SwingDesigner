@@ -11,10 +11,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -23,6 +21,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
     private final List<DesignChangeListener> changeL = new ArrayList<>();
     private final List<SelectionListener>    selectL = new ArrayList<>();
     private final AtomicInteger idSeq   = new AtomicInteger();
+    private int anonCount = 0;
 
     public DesignSurfacePanel() {
         super(null);
@@ -32,7 +31,10 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
         addMouseListener(new MouseAdapter() {
             @Override public void mousePressed(MouseEvent e) {
-                Component hit = getComponentAt(e.getPoint());
+                Component hit = SwingUtilities.getDeepestComponentAt(
+                        DesignSurfacePanel.this,
+                        e.getX(), e.getY()
+                );
                 // allow the panel itself to be selected too
                 if( hit instanceof JComponent ) {
                     selectedComp = (JComponent)hit;
@@ -293,7 +295,11 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         // ─── now emit for each child ──────────────────────────────────
         for (Component c : cont.getComponents()) {
             if (!(c instanceof JComponent jc)) continue;
+
             String id = jc.getName();
+            if (id == null || id.isEmpty()) {
+                id = jc.getClass().getSimpleName().toLowerCase() + anonCount++;
+            }
 
             // instantiate
             sb.append(jc.getClass().getSimpleName()).append(" ").append(id)
@@ -322,12 +328,16 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             // popup-menu by reference
             JPopupMenu pmRef = jc.getComponentPopupMenu();
             if (pmRef != null) {
-                String varMenu = PopupMenuManager.getMenuNames().stream()
-                        .filter(n -> PopupMenuManager.getMenu(n) == pmRef).findFirst()
-                        .map(n -> n.replaceAll("\\W+", "_"))
-                        .orElseThrow();
-                sb.append(id).append(".setComponentPopupMenu(")
-                        .append(varMenu).append(");\n");
+                Optional<String> optName = PopupMenuManager.getMenuNames().stream()
+                        .filter(n -> PopupMenuManager.getMenu(n) == pmRef)
+                        .findFirst();
+                if (optName.isPresent()) {
+                    String varMenu = optName.get().replaceAll("\\W+","_");
+                    sb.append(id).append(".setComponentPopupMenu(").append(varMenu).append(");\n");
+                } else {
+                    // silently skip unregistered menus
+                    System.err.println("emitContainer: skipping unknown popup menu on " + id);
+                }
             }
 
             // ─── preferred / minimum / maximum size ────────────────────

@@ -6,7 +6,12 @@ import designer.misc.PopupMenuManager;
 import designer.model.MenuItemData;
 import designer.model.PopupMenuData;
 import designer.model.ProjectData;
-
+import javax.tools.*;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -42,6 +47,8 @@ public class DesignerFrame extends JFrame {
         inspector     = new PropertyInspectorPanel(designSurface);
         codeView      = new CodeViewPanel();
         preview       = new PreviewPanel(designSurface);
+
+        codeView.onRun(e -> compileAndApply(codeView.getCode()));
 
         // init chooser
         lastDirectory = new File(System.getProperty("user.home"));
@@ -103,6 +110,78 @@ public class DesignerFrame extends JFrame {
         // ─── WIRING (listeners, keybindings) ───────────────────────
         setupListenersAndBindings();
     }
+
+    /**
+     * 1) Wrap the user's code in a tiny helper class
+     * 2) Invoke the JavaCompiler API
+     * 3) Load it with a URLClassLoader
+     * 4) Call its static apply(DesignSurfacePanel) method to mutate your live surface
+     */
+    private void compileAndApply(String userCode) {
+        try {
+            String className = "LiveDesign";
+            // 1) Build full source with imports, reusing the existing root panel
+            String src =
+                    "import designer.panels.DesignSurfacePanel;\n" +
+                            "import javax.swing.*;\n" +
+                            "import java.awt.*;\n" +
+                            "public class " + className + " {\n" +
+                            "  public static void apply(DesignSurfacePanel ds) throws Exception {\n" +
+                            "    // reuse the existing designer panel as our root\n" +
+                            "    JPanel panel = ds;\n" +
+                            "    // clear out any old children\n" +
+                            "    panel.removeAll();\n" +
+                            // insert the user's layout code directly into the existing panel
+                            userCode.replace("JPanel panel = new JPanel();", "") + "\n" +
+                            "    // refresh display\n" +
+                            "    panel.revalidate(); panel.repaint();\n" +
+                            "    // fire design changed so hierarchy & inspector update\n" +
+                            "    ds.externalPropertyChanged();\n" +
+                            "  }\n" +
+                            "}\n";
+
+            // 2) Write source to a temp file and compile
+            File tmpDir = Files.createTempDirectory("dyn").toFile();
+            File srcFile = new File(tmpDir, className + ".java");
+            Files.writeString(srcFile.toPath(), src, StandardCharsets.UTF_8);
+
+            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+            try (StandardJavaFileManager fm = compiler.getStandardFileManager(null, null, null)) {
+                Iterable<? extends JavaFileObject> units =
+                        fm.getJavaFileObjectsFromFiles(List.of(srcFile));
+
+                boolean success = compiler.getTask(
+                        null,
+                        fm,
+                        null,
+                        List.of("-d", tmpDir.getAbsolutePath()),
+                        null,
+                        units
+                ).call();
+                if (!success) throw new RuntimeException("Compilation failed");
+            }
+
+            // 3) Load the compiled class and invoke apply(ds)
+            try (URLClassLoader loader = new URLClassLoader(
+                    new URL[]{ tmpDir.toURI().toURL() },
+                    this.getClass().getClassLoader()
+            )) {
+                Class<?> liveCls = Class.forName(className, true, loader);
+                Method m = liveCls.getMethod("apply", DesignSurfacePanel.class);
+                m.invoke(null, designSurface);
+            }
+
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Run failed: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
 
     public static BufferedImage loadImageResource(final Class<?> c, final String path)
     {

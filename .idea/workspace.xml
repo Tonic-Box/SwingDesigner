@@ -4,9 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e13dc844-16a2-4ea5-9539-79fcfc4c4cdf" name="Changes" comment="project structure reorganization">
-      <change beforePath="$PROJECT_DIR$/src/main/java/designer/editors/BorderChooser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/editors/BorderChooser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/designer/panels/PropertyInspectorPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/panels/PropertyInspectorPanel.java" afterDir="false" />
+    <list default="true" id="e13dc844-16a2-4ea5-9539-79fcfc4c4cdf" name="Changes" comment="Fixed but with hierarchy panel not rebuilding when opening a project or creating a new project.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/misc/ComponentTreeCellRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/misc/ComponentTreeCellRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/panels/CodeViewPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/panels/CodeViewPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/panels/DesignSurfacePanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/panels/DesignSurfacePanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/designer/panels/DesignerFrame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/designer/panels/DesignerFrame.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -160,7 +163,15 @@
       <option name="project" value="LOCAL" />
       <updated>1749614321428</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Fixed but with hierarchy panel not rebuilding when opening a project or creating a new project.">
+      <option name="closed" value="true" />
+      <created>1749658208779</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1749658208779</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -172,6 +183,7 @@
     <MESSAGE value="Functionality for saving/opening projects: Fixed bugs wth popup menus not making the round trip correctly with saving/loading" />
     <MESSAGE value="Added a window icon" />
     <MESSAGE value="project structure reorganization" />
-    <option name="LAST_COMMIT_MESSAGE" value="project structure reorganization" />
+    <MESSAGE value="Fixed but with hierarchy panel not rebuilding when opening a project or creating a new project." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed but with hierarchy panel not rebuilding when opening a project or creating a new project." />
   </component>
 </project>

@@ -31,11 +31,18 @@ public class ComponentTreeCellRenderer extends DefaultTreeCellRenderer {
         // set your custom text
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
         Object uo = node.getUserObject();
-        if (uo instanceof JComponent jc && jc.getName() != null) {
-            label.setText(jc.getName());
+        String text;
+        if (uo instanceof JComponent jc) {
+            // use name if set, otherwise the simple class name
+            String name = jc.getName();
+            text = (name != null && !name.isEmpty())
+                    ? name
+                    : jc.getClass().getSimpleName();
         } else {
-            label.setText("Design Surface");
+            // root or other non-JComponent
+            text = uo.toString();
         }
+        label.setText(text);
 
         // if this is *your* selectedObject, paint it blue…
         if (uo == selectedObject) {
