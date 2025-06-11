@@ -1,6 +1,7 @@
 package designer.panels;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import designer.SwingDesignerApp;
 import designer.misc.PopupMenuManager;
 import designer.model.MenuItemData;
 import designer.model.PopupMenuData;
@@ -31,7 +32,7 @@ public class DesignerFrame extends JFrame {
     public DesignerFrame() {
         super("Swing Visual Designer");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setIconImage(loadImageResource(DesignerFrame.class, "icon.png"));
+        setIconImage(loadImageResource(SwingDesignerApp.class, "icon.png"));
         setSize(1400, 850);
         setLocationRelativeTo(null);
 
