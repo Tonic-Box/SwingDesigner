@@ -22,11 +22,12 @@ public class DesignerFrame extends JFrame {
     private File lastDirectory;
     private final JFileChooser fileChooser;
     private final ObjectMapper mapper = new ObjectMapper();
-    private DesignSurfacePanel designSurface;      // no longer final
+    private DesignSurfacePanel designSurface;
     private final PropertyInspectorPanel inspector;
     private final CodeViewPanel codeView;
-    private PreviewPanel preview;                  // no longer final
-
+    private PreviewPanel preview;
+    private final JTabbedPane leftTabs;
+    private ComponentHierarchyPanel hierarchyPanel;
     private final JTabbedPane centerTabs;
 
     public DesignerFrame() {
@@ -62,10 +63,13 @@ public class DesignerFrame extends JFrame {
         setJMenuBar(menuBar);
 
         // ─── LEFT COLUMN ───────────────────────────────────────────
-        JTabbedPane leftTabs = new JTabbedPane();
+        leftTabs = new JTabbedPane();
         ComponentPalettePanel palette = new ComponentPalettePanel();
         leftTabs.addTab("Palette", palette);
-        leftTabs.addTab("Hierarchy", new ComponentHierarchyPanel(designSurface));
+
+        // create and hold onto it so we can replace it on newProject()
+        hierarchyPanel = new ComponentHierarchyPanel(designSurface);
+        leftTabs.addTab("Hierarchy", hierarchyPanel);
 
         JSplitPane leftSplit = new JSplitPane(
                 JSplitPane.VERTICAL_SPLIT, leftTabs, inspector
@@ -145,6 +149,9 @@ public class DesignerFrame extends JFrame {
         centerTabs.setComponentAt(0, designSurface);
         centerTabs.setComponentAt(1, preview);
 
+        hierarchyPanel = new ComponentHierarchyPanel(designSurface);
+        leftTabs.setComponentAt(1, hierarchyPanel);
+
         inspector.setLayout(new BorderLayout());        // hack: re-create inspector
         // you may want to rebuild the hierarchy tab as well…
 
@@ -209,6 +216,9 @@ public class DesignerFrame extends JFrame {
             }
 
             designSurface.importProject(proj);
+
+            hierarchyPanel.designChanged();
+
             preview = new PreviewPanel(designSurface);
             centerTabs.setComponentAt(1, preview);
             setupListenersAndBindings();

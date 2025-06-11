@@ -16,8 +16,6 @@ public class ComponentHierarchyPanel extends JPanel
     private final DesignSurfacePanel surface;
     private final JTree tree;
     private final DefaultTreeModel model;
-
-    /** Prevents tree→surface→tree loops */
     private boolean updatingFromSurface = false;
     private final ComponentTreeCellRenderer renderer;
 
