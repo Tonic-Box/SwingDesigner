@@ -1,6 +1,8 @@
 package designer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import designer.model.MenuItemData;
+import designer.model.PopupMenuData;
 import designer.model.ProjectData;
 
 import javax.swing.*;
@@ -8,16 +10,18 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DesignerFrame extends JFrame {
     private File currentFile;
     private File lastDirectory;
     private final JFileChooser fileChooser;
     private final ObjectMapper mapper = new ObjectMapper();
-    private       DesignSurfacePanel     designSurface;      // no longer final
+    private       DesignSurfacePanel designSurface;      // no longer final
     private final PropertyInspectorPanel inspector;
-    private final CodeViewPanel          codeView;
-    private       PreviewPanel           preview;            // no longer final
+    private final CodeViewPanel codeView;
+    private       PreviewPanel preview;                  // no longer final
 
     private final JTabbedPane centerTabs;
 
@@ -33,7 +37,7 @@ public class DesignerFrame extends JFrame {
         codeView      = new CodeViewPanel();
         preview       = new PreviewPanel(designSurface);
 
-        //init chooser
+        // init chooser
         lastDirectory = new File(System.getProperty("user.home"));
         fileChooser   = new JFileChooser(lastDirectory);
 
@@ -43,7 +47,7 @@ public class DesignerFrame extends JFrame {
         JMenuItem newItem  = new JMenuItem("New");
         JMenuItem openItem = new JMenuItem("Open..");
         JMenuItem saveItem = new JMenuItem("Save..");
-        newItem .addActionListener(e -> newProject());
+        newItem.addActionListener(e -> newProject());
         openItem.addActionListener(e -> openProject());
         saveItem.addActionListener(e -> saveProject());
         fileMenu.add(newItem);
@@ -89,7 +93,6 @@ public class DesignerFrame extends JFrame {
 
         // ─── WIRING (listeners, keybindings) ───────────────────────
         setupListenersAndBindings();
-
     }
 
     /** Wire up all your listeners and keybindings. */
@@ -103,7 +106,7 @@ public class DesignerFrame extends JFrame {
         });
 
         // keybindings…
-        InputMap  im = designSurface.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        InputMap  im = designSurface.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = designSurface.getActionMap();
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
         am.put("delete", new AbstractAction() {
@@ -111,22 +114,6 @@ public class DesignerFrame extends JFrame {
                 designSurface.removeSelected();
             }
         });
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,  0), "nudgeLeft");
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "nudgeRight");
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP,    0), "nudgeUp");
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN,  0), "nudgeDown");
-        am.put("nudgeLeft",  new NudgeAction(-1,  0));
-        am.put("nudgeRight", new NudgeAction( 1,  0));
-        am.put("nudgeUp",    new NudgeAction( 0, -1));
-        am.put("nudgeDown",  new NudgeAction( 0,  1));
-    }
-
-    private class NudgeAction extends AbstractAction {
-        private final int dx, dy;
-        NudgeAction(int dx, int dy){ this.dx = dx; this.dy = dy; }
-        public void actionPerformed(ActionEvent e){
-            designSurface.nudgeSelection(dx, dy);
-        }
     }
 
     /** Clears everything to start a brand-new project. */
@@ -176,12 +163,30 @@ public class DesignerFrame extends JFrame {
 
         if (fileChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
 
+        newProject();
+
         File chosen = fileChooser.getSelectedFile();
         lastDirectory = chosen.getParentFile();   // remember for next time
         currentFile   = chosen;
 
         try {
             ProjectData proj = mapper.readValue(currentFile, ProjectData.class);
+
+            // --- NEW: rebuild PopupMenuManager from the saved data ---
+            List<String> menuNames = new ArrayList<>(PopupMenuManager.getMenuNames());
+            for (String name : menuNames) {
+                PopupMenuManager.removeMenu(name);
+            }
+            for (PopupMenuData pmData : proj.popupMenus) {
+                JPopupMenu menu = new JPopupMenu();
+                for (MenuItemData miData : pmData.items) {
+                    JMenuItem item = new JMenuItem(miData.text);
+                    item.setActionCommand(miData.actionCommand);
+                    menu.add(item);
+                }
+                PopupMenuManager.putMenu(pmData.name, menu);
+            }
+
             designSurface.importProject(proj);
             preview = new PreviewPanel(designSurface);
             centerTabs.setComponentAt(1, preview);
