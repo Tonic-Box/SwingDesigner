@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * A simple border chooser dialog.
@@ -75,19 +76,19 @@ public class BorderChooser extends JDialog {
 
     private void updateUIState() {
         String type = (String)typeBox.getSelectedItem();
-        colorBtn.setEnabled(type.equals("Line"));
-        thicknessSpinner.setEnabled(type.equals("Line"));
-        topSpinner.setEnabled(type.equals("Empty"));
-        leftSpinner.setEnabled(type.equals("Empty"));
-        bottomSpinner.setEnabled(type.equals("Empty"));
-        rightSpinner.setEnabled(type.equals("Empty"));
-        titleField.setEnabled(type.equals("Titled"));
+        colorBtn.setEnabled("Line".equals(type));
+        thicknessSpinner.setEnabled("Line".equals(type));
+        topSpinner.setEnabled("Empty".equals(type));
+        leftSpinner.setEnabled("Empty".equals(type));
+        bottomSpinner.setEnabled("Empty".equals(type));
+        rightSpinner.setEnabled("Empty".equals(type));
+        titleField.setEnabled("Titled".equals(type));
         updatePreview();
     }
 
     private void updatePreview() {
         String type = (String)typeBox.getSelectedItem();
-        switch(type) {
+        switch(Objects.requireNonNull(type)) {
             case "None":    selectedBorder = null; break;
             case "Line":    selectedBorder = BorderFactory.createLineBorder(lineColor, (Integer)thicknessSpinner.getValue()); break;
             case "Empty":   selectedBorder = BorderFactory.createEmptyBorder(

@@ -109,7 +109,7 @@ public class DesignerFrame extends JFrame {
                 return ImageIO.read(in);
             }
         }
-        catch (Exception e)
+        catch (Exception ignored)
         {
         }
         return null;

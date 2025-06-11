@@ -7,7 +7,6 @@ import java.awt.*;
  * A simple font chooser dialog.
  */
 public class JFontChooser extends JDialog {
-    private Font selectedFont;
     private final JList<String> familyList;
     private final JComboBox<String> styleBox;
     private final JSpinner sizeSpinner;

@@ -14,7 +14,6 @@ public class PopupMenuEditorDialog extends JDialog {
     private final JList<String> menuList       = new JList<>(listModel);
     private final DefaultListModel<JMenuItem> itemModel = new DefaultListModel<>();
     private final JList<JMenuItem> itemList    = new JList<>(itemModel);
-    private final JTextField nameField         = new JTextField(15);
 
     private PopupMenuEditorDialog(Window owner) {
         super(owner, "Edit Popup Menus", ModalityType.APPLICATION_MODAL);

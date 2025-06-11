@@ -6,8 +6,7 @@ public final class Layouts {
     public static final String[] NAMES = { "Absolute", "FlowLayout", "BorderLayout", "GridLayout" };
 
     public static LayoutManager fromName(String n){
-        return switch (n){
-            case "Absolute"     -> null;
+        return switch (n) {
             case "FlowLayout"   -> new FlowLayout();
             case "BorderLayout" -> new BorderLayout();
             case "GridLayout"   -> new GridLayout();

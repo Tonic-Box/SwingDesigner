@@ -1,7 +1,5 @@
 package designer.panels;
 
-import designer.panels.DesignSurfacePanel;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;

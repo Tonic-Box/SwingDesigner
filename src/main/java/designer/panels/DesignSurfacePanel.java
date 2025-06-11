@@ -14,12 +14,11 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class DesignSurfacePanel extends JPanel implements DropTargetListener {
-    private boolean gridEnabled = false;
-    private final int GRID_SPAN = 10;
     private JComponent selectedComp = null;
     private final List<DesignChangeListener> changeL = new ArrayList<>();
     private final List<SelectionListener>    selectL = new ArrayList<>();
@@ -46,12 +45,6 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         });
     }
 
-    /** Toggle grid on/off */
-    public void setGridEnabled(boolean on) {
-        this.gridEnabled = on;
-        repaint();
-    }
-
     /** Remove currently selected component */
     public void removeSelected() {
         if (selectedComp != null) {
@@ -59,20 +52,6 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             parent.remove(selectedComp);
             selectedComp = null;
             notifySelection(null);
-            notifyChange();
-        }
-    }
-
-    /** Nudge selected by dx/dy */
-    public void nudgeSelection(int dx, int dy) {
-        if (selectedComp != null) {
-            Rectangle r = selectedComp.getBounds();
-            r.translate(dx, dy);
-            if (gridEnabled) {
-                r.x = Math.round(r.x / (float)GRID_SPAN) * GRID_SPAN;
-                r.y = Math.round(r.y / (float)GRID_SPAN) * GRID_SPAN;
-            }
-            selectedComp.setBounds(r);
             notifyChange();
         }
     }
@@ -115,29 +94,6 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 g2.dispose();
             }
         }
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        // draw grid if enabled
-        if (gridEnabled) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setColor(new Color(100,100,100,40));
-            for (int x = 0; x < getWidth(); x += GRID_SPAN)
-                g2.drawLine(x, 0, x, getHeight());
-            for (int y = 0; y < getHeight(); y += GRID_SPAN)
-                g2.drawLine(0, y, getWidth(), y);
-            g2.dispose();
-        }
-    }
-
-    private void snapBounds(Rectangle r) {
-        r.x      = Math.round(r.x / (float)GRID_SPAN) * GRID_SPAN;
-        r.y      = Math.round(r.y / (float)GRID_SPAN) * GRID_SPAN;
-        r.width  = Math.max(GRID_SPAN, Math.round(r.width  / (float)GRID_SPAN) * GRID_SPAN);
-        r.height = Math.max(GRID_SPAN, Math.round(r.height / (float)GRID_SPAN) * GRID_SPAN);
     }
 
     /* DropTargetListener */
@@ -408,7 +364,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
             // recurse
             if (jc.getComponentCount() > 0) {
-                emitContainer((Container) jc, id, sb, false);
+                emitContainer(jc, id, sb, false);
             }
         }
     }
@@ -658,12 +614,8 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             if (!e.isPopupTrigger()) return;
             // if user has set a JPopupMenu on this component, show it instead
             JPopupMenu pm = target.getComponentPopupMenu();
-            if (pm != null) {
-                pm.show(target, e.getX(), e.getY());
-            } else {
-                // your existing designer menu
-                popup.show(target, e.getX(), e.getY());
-            }
+            // your existing designer menu
+            Objects.requireNonNullElse(pm, popup).show(target, e.getX(), e.getY());
         }
 
         @Override
@@ -742,7 +694,6 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 if (dragOffset != null) {
                     r.setLocation(parentPt.x - dragOffset.x, parentPt.y - dragOffset.y);
                 }
-                if (gridEnabled) snapBounds(r);
                 target.setBounds(r);
             }
             notifyChange();

@@ -20,13 +20,10 @@ public class PropertyInspectorPanel extends JPanel {
     private final PropertyTableModel model;
     private final DesignSurfacePanel designSurface;
 
-    private final JPanel    constraintPanel;
     private final JComboBox<String> constraintCombo;
 
-    private final JPanel gridConfigPanel;
     private final JSpinner rowsSpinner, colsSpinner;
 
-    private final JPanel cellPosPanel;
     private final JSpinner cellRowSpinner, cellColSpinner;
     private final JComboBox<PositionType> positionCombo;
 
@@ -88,7 +85,7 @@ public class PropertyInspectorPanel extends JPanel {
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         // ─── constraint chooser (BorderLayout) ───────────────────────
-        constraintPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel constraintPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         constraintPanel.add(new JLabel("Constraint:"));
         constraintCombo = new JComboBox<>(new String[]{"Center","North","South","East","West"});
         constraintCombo.addActionListener(e -> {
@@ -101,7 +98,7 @@ public class PropertyInspectorPanel extends JPanel {
         constraintPanel.add(constraintCombo);
 
         // ─── GridLayout config ────────────────────────────────────────
-        gridConfigPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,5,0));
+        JPanel gridConfigPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         gridConfigPanel.add(new JLabel("Rows:"));
         rowsSpinner = new JSpinner(new SpinnerNumberModel(1,0,100,1));
         gridConfigPanel.add(rowsSpinner);
@@ -120,7 +117,7 @@ public class PropertyInspectorPanel extends JPanel {
         colsSpinner.addChangeListener(gridChange);
 
         // ─── Cell position (parent GridLayout) ────────────────────────
-        cellPosPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,5,0));
+        JPanel cellPosPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         cellPosPanel.add(new JLabel("Cell Row:"));
         cellRowSpinner = new JSpinner(new SpinnerNumberModel(0,0,0,1));
         cellPosPanel.add(cellRowSpinner);
@@ -255,8 +252,7 @@ public class PropertyInspectorPanel extends JPanel {
     /** Renders Dimensions as W: x, H: x */
     static class DimensionCellRenderer extends DefaultTableCellRenderer {
         @Override protected void setValue(Object value) {
-            if (value instanceof Dimension) {
-                Dimension d = (Dimension)value;
+            if (value instanceof Dimension d) {
                 setText("W: " + d.width + ", H: " + d.height);
             } else super.setValue(value);
         }
