@@ -29,4 +29,13 @@ public class PopupMenuManager {
     public static JPopupMenu getMenu(String name) {
         return MENUS.get(name);
     }
+
+    public static String menuNameOf(JPopupMenu menu) {
+        for (Map.Entry<String, JPopupMenu> entry : MENUS.entrySet()) {
+            if (entry.getValue() == menu) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
 }
