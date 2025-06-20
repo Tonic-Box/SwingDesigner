@@ -537,9 +537,10 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             }
             // popup menu
             if (cd.popupMenuName != null) {
-                comp.setComponentPopupMenu(
-                        PopupMenuManager.getMenu(cd.popupMenuName)
-                );
+                JPopupMenu menu = PopupMenuManager.getMenu(cd.popupMenuName);
+                // save on the component so the PreviewPanel can pick it up
+                comp.putClientProperty("savedPopup", menu);
+                // — and do NOT call comp.setComponentPopupMenu(menu) here —
             }
             // add to parent
             if (parent.getLayout() instanceof BorderLayout) {
@@ -642,9 +643,10 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         private void maybeShowPopup(MouseEvent e) {
             if (!e.isPopupTrigger()) return;
             // if user has set a JPopupMenu on this component, show it instead
-            JPopupMenu pm = target.getComponentPopupMenu();
+            //JPopupMenu pm = target.getComponentPopupMenu();
             // your existing designer menu
-            Objects.requireNonNullElse(pm, popup).show(target, e.getX(), e.getY());
+            //Objects.requireNonNullElse(pm, popup).show(target, e.getX(), e.getY());
+            popup.show(target, e.getX(), e.getY());
         }
 
         @Override

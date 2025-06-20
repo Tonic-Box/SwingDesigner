@@ -60,6 +60,12 @@ public class PreviewPanel extends JPanel {
                 catch(Exception ignored){}
             }
         }
+        if (original instanceof JComponent origJC && copy instanceof JComponent copyJC) {
+            Object maybe = origJC.getClientProperty("savedPopup");
+            if (maybe instanceof JPopupMenu pm) {
+                copyJC.setComponentPopupMenu(pm);
+            }
+        }
         return copy;
     }
 }
