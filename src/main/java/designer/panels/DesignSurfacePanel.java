@@ -91,7 +91,11 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 );
 
                 // inset by 1 so stroke is fully visible inside the component
-                g2.drawRect(r.x + 1, r.y + 1, r.width - 3, r.height - 3);
+                //g2.drawRect(r.x + 1, r.y + 1, r.width - 3, r.height - 3);
+
+                // draw a 2px-wide stroke exactly around the component
+                // subtract 1 from width/height so we hit the outer pixel exactly
+                g2.drawRect(r.x, r.y, r.width - 1, r.height - 1);
             } finally {
                 g2.dispose();
             }
