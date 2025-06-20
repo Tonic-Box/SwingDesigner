@@ -152,13 +152,29 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
      * We now:
      *  1) re-name to keep names unique,
      *  2) re-apply client-property constraints for every BorderLayout,
-     *  3) fire our designChanged listeners.
+     *  3) re-install move/resize & click listeners on every child,
+     *  4) fire our designChanged listeners.
      */
     public void externalPropertyChanged() {
         ensureUniqueNames();
         reapplyConstraints(this);
+        // re-attach our MoveResizeAdapter to every JComponent in the tree
+        installBehaviorsRecursively(this);
         notifyChange();
         //notifySelection(selectedComp);
+    }
+
+    /** Walk the component subtree and install our move/resize + click behavior. */
+    private void installBehaviorsRecursively(Container parent) {
+        for (Component c : parent.getComponents()) {
+            if (c instanceof JComponent jc) {
+                installDragResizeBehavior(jc);
+                // since JComponent is also a Container, just recurse on it
+                if (jc.getComponentCount() > 0) {
+                    installBehaviorsRecursively(jc);
+                }
+            }
+        }
     }
 
     /**
@@ -254,6 +270,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
     /* ───── Simple code generation (Java Swing) ───── */
     public String generateCode() {
+        anonCount = 0;
         StringBuilder sb = new StringBuilder("// ---- auto-generated layout ----\n");
         for (String name : PopupMenuManager.getMenuNames()) {
             String var = name.replaceAll("\\W+", "_");
