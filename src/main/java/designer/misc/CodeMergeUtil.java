@@ -39,10 +39,7 @@ public class CodeMergeUtil {
             if (suffixExists(candidate, merged)) {
                 continue;
             }
-            // Skip if fuzzy-similar
-            if (existsFuzzy(candidate, merged, threshold)) {
-                continue;
-            }
+            // (Removed fuzzy-similar skip to allow distinct prints with different literals)
 
             int pos = findContextualPosition(candidate, merged, newLines, i, threshold);
             if (pos < 0) {
@@ -87,16 +84,6 @@ public class CodeMergeUtil {
         return false;
     }
 
-    private static boolean existsFuzzy(String line, List<String> list, double threshold) {
-        String n1 = normalize(line);
-        for (String l : list) {
-            if (similarity(n1, normalize(l)) >= threshold) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private static int findContextualPosition(String line, List<String> base, List<String> updated,
                                               int idx, double threshold) {
         // backward neighbor context
@@ -123,8 +110,10 @@ public class CodeMergeUtil {
     }
 
     private static String normalize(String s) {
-        return s.toLowerCase().replaceAll("\\s+", " ")
-                .replaceAll("[^a-z0-9()\\[\\] {};,\\.\\\"']", "").trim();
+        return s.toLowerCase()
+                .replaceAll("\\s+", " ")
+                .replaceAll("[^a-z0-9()\\[\\] {};,\\.\\\"']", "")
+                .trim();
     }
 
     private static double similarity(String a, String b) {
