@@ -9,6 +9,7 @@ public class CodeViewPanel extends JPanel {
     private final JTextArea area = new JTextArea();
     private final JButton runButton = new JButton("Run");
     private ActionListener runListener;
+    private String cachedCode = "";
 
     public CodeViewPanel(){
         super(new BorderLayout());
@@ -31,11 +32,17 @@ public class CodeViewPanel extends JPanel {
     }
 
     public void setCode(String code){
+        cachedCode = code;
         area.setText(code);
     }
 
     public String getCode(){
+        cachedCode = area.getText();
         return area.getText();
+    }
+
+    public String getCachedCode(){
+        return cachedCode;
     }
 
     /** DesignerFrame will call this to hook in the compile-and-apply action */

@@ -2,6 +2,7 @@ package designer.panels;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import designer.SwingDesignerApp;
+import designer.misc.CodeMergeUtil;
 import designer.misc.PopupMenuManager;
 import designer.model.MenuItemData;
 import designer.model.PopupMenuData;
@@ -206,7 +207,8 @@ public class DesignerFrame extends JFrame {
         // design → preview & codeView
         designSurface.addDesignChangeListener(() -> {
             preview.refresh();
-            codeView.setCode(designSurface.generateCode());
+            codeView.setCode(CodeMergeUtil.merge(designSurface.generateCode(), codeView.getCachedCode()));
+            //codeView.setCode(designSurface.generateCode());
         });
 
         // keybindings…
