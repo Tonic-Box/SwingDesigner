@@ -30,6 +30,10 @@ public class PopupMenuManager {
         return MENUS.get(name);
     }
 
+    public static void clearAll() {
+        MENUS.clear();
+    }
+
     public static String menuNameOf(JPopupMenu menu) {
         for (Map.Entry<String, JPopupMenu> entry : MENUS.entrySet()) {
             if (entry.getValue() == menu) {

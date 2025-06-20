@@ -36,16 +36,25 @@ public class PreviewPanel extends JPanel {
     private void cloneInto(Container src, Container dst) throws Exception {
         for (Component child : src.getComponents()) {
             Component copy = cloneComponent(child);
+
+            if (child instanceof JComponent srcJC && copy instanceof JComponent dstJC) {
+                JPopupMenu pm = srcJC.getComponentPopupMenu();
+                if (pm != null) {
+                    dstJC.setComponentPopupMenu(pm);
+                }
+            }
+
             LayoutManager lm = dst.getLayout();
             if (lm instanceof BorderLayout) {
                 Object cons = ((JComponent)child).getClientProperty("layoutConstraint");
-                String cstr = cons!=null ? cons.toString() : "Center";
+                String cstr = cons!=null ? cons.toString() : BorderLayout.CENTER;
                 dst.add(copy, cstr);
             } else {
                 dst.add(copy);
             }
-            if (child instanceof Container sc && copy instanceof Container dc)
+            if (child instanceof Container sc && copy instanceof Container dc) {
                 cloneInto(sc, dc);
+            }
         }
     }
 

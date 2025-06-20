@@ -291,6 +291,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             }
             sb.append("\n");
         }
+
         emitContainer(this, "panel", sb, true);
         return sb.toString();
     }
@@ -313,87 +314,106 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             sb.append("\n");
         }
 
-        // ─── now emit for each child ──────────────────────────────────
+        PopupMenuManager.clearAll();
+
         for (Component c : cont.getComponents()) {
             if (!(c instanceof JComponent jc)) continue;
 
+            // decide variable name
             String id = jc.getName();
             if (id == null || id.isEmpty()) {
                 id = jc.getClass().getSimpleName().toLowerCase() + anonCount++;
             }
 
             // instantiate
-            sb.append(jc.getClass().getSimpleName()).append(" ").append(id)
-                    .append(" = new ").append(jc.getClass().getSimpleName()).append("();\n");
+            sb.append(jc.getClass().getSimpleName())
+                    .append(" ").append(id)
+                    .append(" = new ").append(jc.getClass().getSimpleName())
+                    .append("();\n");
 
-            // button text
+            // text if applicable
             if (jc instanceof AbstractButton but && but.getText() != null) {
                 sb.append(id).append(".setText(\"")
-                        .append(but.getText().replace("\"","\\\"")).append("\");\n");
+                        .append(but.getText().replace("\"","\\\""))
+                        .append("\");\n");
             }
 
             // layout
-            sb.append(id).append(".setLayout(").append(layoutExpr(jc.getLayout())).append(");\n");
+            sb.append(id).append(".setLayout(")
+                    .append(layoutExpr(jc.getLayout()))
+                    .append(");\n");
 
             // background / foreground
             Color bgc = jc.getBackground(), fgc = jc.getForeground();
             if (bgc != null) {
                 sb.append(id).append(".setBackground(new Color(0x")
-                        .append(String.format("%06X", bgc.getRGB() & 0xFFFFFF)).append("));\n");
+                        .append(String.format("%06X", bgc.getRGB() & 0xFFFFFF))
+                        .append("));\n");
             }
             if (fgc != null) {
                 sb.append(id).append(".setForeground(new Color(0x")
-                        .append(String.format("%06X", fgc.getRGB() & 0xFFFFFF)).append("));\n");
+                        .append(String.format("%06X", fgc.getRGB() & 0xFFFFFF))
+                        .append("));\n");
             }
 
-            // popup-menu by reference
+            // ─── popup-menu by reference ─────────────────────────────
+            // first try the actual popup, then fall back to "savedPopup" client prop
             JPopupMenu pmRef = jc.getComponentPopupMenu();
+            if (pmRef == null) {
+                Object saved = jc.getClientProperty("savedPopup");
+                if (saved instanceof JPopupMenu) {
+                    pmRef = (JPopupMenu) saved;
+                }
+            }
             if (pmRef != null) {
-                // try to look up an existing name
                 String menuName = PopupMenuManager.menuNameOf(pmRef);
                 if (menuName == null) {
-                    // auto-register unknown menus under a generated name
+                    // auto-register unknown menu
                     menuName = "popupMenu" + PopupMenuManager.getMenuNames().size();
                     PopupMenuManager.putMenu(menuName, pmRef);
                 }
-                String varMenu = menuName.replaceAll("\\W+","_");
-                sb.append(id)
-                        .append(".setComponentPopupMenu(")
-                        .append(varMenu)
-                        .append(");\n");
+                String varMenu = menuName.replaceAll("\\W+", "_");
+                sb.append(id).append(".setComponentPopupMenu(")
+                        .append(varMenu).append(");\n");
             }
 
-            // ─── preferred / minimum / maximum size ────────────────────
+            // preferred / minimum / maximum size
             Dimension ps = jc.getPreferredSize();
             if (ps != null) {
                 sb.append(id).append(".setPreferredSize(new Dimension(")
-                        .append(ps.width).append(", ").append(ps.height).append("));\n");
+                        .append(ps.width).append(", ").append(ps.height)
+                        .append("));\n");
             }
             Dimension ms = jc.getMinimumSize();
             if (ms != null) {
                 sb.append(id).append(".setMinimumSize(new Dimension(")
-                        .append(ms.width).append(", ").append(ms.height).append("));\n");
+                        .append(ms.width).append(", ").append(ms.height)
+                        .append("));\n");
             }
             Dimension xs = jc.getMaximumSize();
             if (xs != null) {
                 sb.append(id).append(".setMaximumSize(new Dimension(")
-                        .append(xs.width).append(", ").append(xs.height).append("));\n");
+                        .append(xs.width).append(", ").append(xs.height)
+                        .append("));\n");
             }
 
-            // position and add
+            // position & add
             PositionType pt = (PositionType) jc.getClientProperty("positionType");
             if (pt == null) pt = PositionType.ABSOLUTE;
             if (pt == PositionType.ABSOLUTE) {
                 Rectangle r = jc.getBounds();
                 sb.append(id).append(".setBounds(")
                         .append(r.x).append(", ").append(r.y).append(", ")
-                        .append(r.width).append(", ").append(r.height).append(");\n");
+                        .append(r.width).append(", ").append(r.height)
+                        .append(");\n");
             }
             Object cons = jc.getClientProperty("layoutConstraint");
-            String constraint = (cons != null
+            String constraint = cons!=null
                     ? "BorderLayout." + cons.toString().toUpperCase()
-                    : "BorderLayout.CENTER");
-            sb.append(var).append(".add(").append(id).append(", ").append(constraint).append(");\n\n");
+                    : "BorderLayout.CENTER";
+            sb.append(var).append(".add(")
+                    .append(id).append(", ").append(constraint)
+                    .append(");\n\n");
 
             // recurse
             if (jc.getComponentCount() > 0) {
