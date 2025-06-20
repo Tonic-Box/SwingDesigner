@@ -328,16 +328,18 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             // popup-menu by reference
             JPopupMenu pmRef = jc.getComponentPopupMenu();
             if (pmRef != null) {
-                Optional<String> optName = PopupMenuManager.getMenuNames().stream()
-                        .filter(n -> PopupMenuManager.getMenu(n) == pmRef)
-                        .findFirst();
-                if (optName.isPresent()) {
-                    String varMenu = optName.get().replaceAll("\\W+","_");
-                    sb.append(id).append(".setComponentPopupMenu(").append(varMenu).append(");\n");
-                } else {
-                    // silently skip unregistered menus
-                    System.err.println("emitContainer: skipping unknown popup menu on " + id);
+                // try to look up an existing name
+                String menuName = PopupMenuManager.menuNameOf(pmRef);
+                if (menuName == null) {
+                    // auto-register unknown menus under a generated name
+                    menuName = "popupMenu" + PopupMenuManager.getMenuNames().size();
+                    PopupMenuManager.putMenu(menuName, pmRef);
                 }
+                String varMenu = menuName.replaceAll("\\W+","_");
+                sb.append(id)
+                        .append(".setComponentPopupMenu(")
+                        .append(varMenu)
+                        .append(");\n");
             }
 
             // ─── preferred / minimum / maximum size ────────────────────
