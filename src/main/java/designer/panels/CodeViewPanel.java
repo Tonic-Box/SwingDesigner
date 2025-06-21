@@ -1,12 +1,15 @@
 package designer.panels;
 
+import designer.types.ExRSyntaxTextArea;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 public class CodeViewPanel extends JPanel {
-    private final JTextArea area = new JTextArea();
+    private final ExRSyntaxTextArea area;
     private final JButton runButton = new JButton("Run");
     private ActionListener runListener;
     private String cachedCode = "";
@@ -22,6 +25,7 @@ public class CodeViewPanel extends JPanel {
         add(top, BorderLayout.NORTH);
 
         // — code area —
+        area = new ExRSyntaxTextArea(50, 60);
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         area.setEditable(true);
         add(new JScrollPane(area), BorderLayout.CENTER);

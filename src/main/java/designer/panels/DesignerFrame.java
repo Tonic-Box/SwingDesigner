@@ -207,8 +207,8 @@ public class DesignerFrame extends JFrame {
         // design → preview & codeView
         designSurface.addDesignChangeListener(() -> {
             preview.refresh();
-            codeView.setCode(CodeMergeUtil.merge(designSurface.generateCode(), codeView.getCachedCode()));
-            //codeView.setCode(designSurface.generateCode());
+            //codeView.setCode(CodeMergeUtil.merge(codeView.getCachedCode(), designSurface.generateCode()));
+            codeView.setCode(designSurface.generateCode());
         });
 
         // keybindings…
@@ -224,6 +224,7 @@ public class DesignerFrame extends JFrame {
 
     /** Clears everything to start a brand-new project. */
     private void newProject() {
+        codeView.setCode("");
         designSurface = new DesignSurfacePanel();
         preview       = new PreviewPanel(designSurface);
 
@@ -267,6 +268,7 @@ public class DesignerFrame extends JFrame {
 
     /** Load a project JSON and rebuild the surface from it. */
     private void openProject() {
+        codeView.setCode("");
         fileChooser.setCurrentDirectory(lastDirectory);
         fileChooser.setDialogTitle("Open Project");
 
