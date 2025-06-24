@@ -53,4 +53,10 @@ public class CodeViewPanel extends JPanel {
     public void onRun(ActionListener l){
         this.runListener = l;
     }
+
+    public String getUserCode()
+    {
+        String[] parts = area.getText().split("// ---- user code ----");
+        return parts.length > 1 ? parts[1].trim() : "";
+    }
 }

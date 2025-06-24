@@ -423,10 +423,11 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
     }
 
     /** Build a full ProjectData out of the live surface. */
-    public ProjectData exportProject() {
+    public ProjectData exportProject(DesignerFrame frame) {
         ProjectData proj = new ProjectData();
         // 1) root
         proj.root = buildComponentData(this);
+        proj.userCode = frame.codeView.getUserCode();
         // 2) all popup menus
         proj.popupMenus = PopupMenuManager.getMenuNames().stream()
                 .map(name -> {

@@ -2,7 +2,7 @@ package designer.panels;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import designer.SwingDesignerApp;
-import designer.misc.CodeMergeUtil;
+import designer.misc.MergingUtil;
 import designer.misc.PopupMenuManager;
 import designer.model.MenuItemData;
 import designer.model.PopupMenuData;
@@ -30,7 +30,7 @@ public class DesignerFrame extends JFrame {
     private final ObjectMapper mapper = new ObjectMapper();
     private DesignSurfacePanel designSurface;
     private final PropertyInspectorPanel inspector;
-    private final CodeViewPanel codeView;
+    public final CodeViewPanel codeView;
     private PreviewPanel preview;
     private final JTabbedPane leftTabs;
     private ComponentHierarchyPanel hierarchyPanel;
@@ -207,8 +207,9 @@ public class DesignerFrame extends JFrame {
         // design → preview & codeView
         designSurface.addDesignChangeListener(() -> {
             preview.refresh();
-            //codeView.setCode(CodeMergeUtil.merge(codeView.getCachedCode(), designSurface.generateCode()));
-            codeView.setCode(designSurface.generateCode());
+            codeView.getCode();
+            codeView.setCode(MergingUtil.merge(designSurface.generateCode(), codeView.getCachedCode()));
+            //codeView.setCode(designSurface.generateCode());
         });
 
         // keybindings…
@@ -253,7 +254,7 @@ public class DesignerFrame extends JFrame {
         currentFile   = chosen;
 
         try {
-            ProjectData proj = designSurface.exportProject();
+            ProjectData proj = designSurface.exportProject(this);
             mapper.writerWithDefaultPrettyPrinter()
                     .writeValue(currentFile, proj);
             JOptionPane.showMessageDialog(this, "Saved to " + currentFile.getName());
@@ -305,6 +306,8 @@ public class DesignerFrame extends JFrame {
             preview = new PreviewPanel(designSurface);
             centerTabs.setComponentAt(1, preview);
             setupListenersAndBindings();
+            preview.refresh();
+            codeView.setCode(MergingUtil.merge(designSurface.generateCode(), "// ---- user code ----\n" + proj.userCode));
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(
