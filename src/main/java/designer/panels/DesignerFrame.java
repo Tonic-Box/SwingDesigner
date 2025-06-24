@@ -110,6 +110,8 @@ public class DesignerFrame extends JFrame {
 
         // ─── WIRING (listeners, keybindings) ───────────────────────
         setupListenersAndBindings();
+
+        codeView.setCode(MergingUtil.merge(designSurface.generateCode(), codeView.getCachedCode()));
     }
 
     /**
@@ -240,6 +242,7 @@ public class DesignerFrame extends JFrame {
 
         setupListenersAndBindings();
         currentFile = null;
+        codeView.setCode(MergingUtil.merge(designSurface.generateCode(), codeView.getCachedCode()));
     }
 
     private void saveProject() {

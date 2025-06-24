@@ -12,7 +12,6 @@ import java.awt.dnd.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -280,6 +279,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
     private void notifySelection(Component c){ selectL .forEach(l -> l.selectionChanged(c)); }
 
     /* ───── Simple code generation (Java Swing) ───── */
+
     public String generateCode() {
         anonCount = 0;
         StringBuilder sb = new StringBuilder("// ---- auto-generated layout ----\n");
