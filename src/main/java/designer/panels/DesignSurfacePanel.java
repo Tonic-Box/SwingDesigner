@@ -11,6 +11,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -261,6 +263,11 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
     /* ───── Movable & resizable behaviour ───── */
     private void installDragResizeBehavior(JComponent c) {
+        for(MouseListener l : c.getMouseListeners()) {
+            if (l instanceof MoveResizeAdapter) {
+                return;
+            }
+        }
         MoveResizeAdapter adapter = new MoveResizeAdapter(c);
         c.addMouseListener(adapter);
         c.addMouseMotionListener(adapter);
@@ -667,10 +674,6 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         /* helper: show popup across platforms */
         private void maybeShowPopup(MouseEvent e) {
             if (!e.isPopupTrigger()) return;
-            // if user has set a JPopupMenu on this component, show it instead
-            //JPopupMenu pm = target.getComponentPopupMenu();
-            // your existing designer menu
-            //Objects.requireNonNullElse(pm, popup).show(target, e.getX(), e.getY());
             popup.show(target, e.getX(), e.getY());
         }
 
