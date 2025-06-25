@@ -12,6 +12,7 @@ import java.awt.dnd.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Area;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,6 +24,9 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
     private final List<SelectionListener>    selectL = new ArrayList<>();
     private final AtomicInteger idSeq   = new AtomicInteger();
     private int anonCount = 0;
+    private boolean snapToGrid = false;
+    private int     gridSize   = 10;
+    private Color   gridColor  = new Color(200, 200, 200, 64);
 
     public DesignSurfacePanel() {
         super(null);
@@ -46,6 +50,23 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 repaint();
             }
         });
+    }
+
+    /** Called by DesignerFrame when the user toggles Snap to Grid */
+    public void setSnapToGrid(boolean s) {
+        this.snapToGrid = s;
+    }
+    public void setGridSize(int sz) {
+        this.gridSize = sz;
+    }
+    public void setGridColor(Color c) {
+        this.gridColor = c;
+    }
+
+    public Color getGridColor() { return gridColor; }
+
+    public int getGridSize() {
+        return gridSize;
     }
 
     /** Remove currently selected component */
@@ -72,31 +93,50 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
     protected void paintChildren(Graphics g) {
         super.paintChildren(g);
 
+        if (snapToGrid && gridSize >= 2 && selectedComp != null) {
+            Container host = selectedComp.getParent();
+            if (host != null && host.getLayout() == null) {
+                Point origin = SwingUtilities.convertPoint(host, 0, 0, this);
+                int w = host.getWidth(), h = host.getHeight();
+
+                // compute the selection rect in this panel’s coords
+                Rectangle selRect = SwingUtilities.convertRectangle(
+                        host, selectedComp.getBounds(), this
+                );
+
+                Graphics2D g2 = (Graphics2D) g.create();
+                try {
+                    // build a clip region: host bounds MINUS the selRect
+                    Area clip = new Area(new Rectangle(origin.x, origin.y, w, h));
+                    clip.subtract(new Area(selRect));
+                    g2.setClip(clip);
+
+                    g2.setColor(gridColor);
+                    for (int x = origin.x; x <= origin.x + w; x += gridSize)
+                        g2.drawLine(x, origin.y, x, origin.y + h);
+                    for (int y = origin.y; y <= origin.y + h; y += gridSize)
+                        g2.drawLine(origin.x, y, origin.x + w, y);
+                } finally {
+                    g2.dispose();
+                }
+            }
+        }
+
+        // ...then draw your orange selection rect as before
         if (selectedComp != null) {
             Graphics2D g2 = (Graphics2D) g.create();
             try {
                 g2.setColor(Color.ORANGE);
-                float[] dash = {4f, 4f};
+                float[] dash = {4f,4f};
                 g2.setStroke(new BasicStroke(
-                        2f,
-                        BasicStroke.CAP_BUTT,
-                        BasicStroke.JOIN_MITER,
-                        1f, dash, 0f
+                        2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1f, dash, 0f
                 ));
-
-                // convert the child’s bounds into surface coords
                 Rectangle r = SwingUtilities.convertRectangle(
                         selectedComp.getParent(),
                         selectedComp.getBounds(),
                         this
                 );
-
-                // inset by 1 so stroke is fully visible inside the component
-                //g2.drawRect(r.x + 1, r.y + 1, r.width - 3, r.height - 3);
-
-                // draw a 2px-wide stroke exactly around the component
-                // subtract 1 from width/height so we hit the outer pixel exactly
-                g2.drawRect(r.x, r.y, r.width - 1, r.height - 1);
+                g2.drawRect(r.x, r.y, r.width-1, r.height-1);
             } finally {
                 g2.dispose();
             }
@@ -275,7 +315,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
     /* ───── Observers ───── */
     public void addDesignChangeListener(DesignChangeListener l){ changeL.add(l);}
-    public void addSelectionListener(SelectionListener l){ selectL.add(l);}
+    public void addSelectionListener(SelectionListener l){ selectL.add(l); selectL.add(c -> repaint());}
     private void notifyChange()   { revalidate(); repaint(); changeL.forEach(DesignChangeListener::designChanged);}
     private void notifySelection(Component c){ selectL .forEach(l -> l.selectionChanged(c)); }
 
@@ -795,15 +835,34 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 int newH = Math.max(20, e.getY());
                 target.setSize(newW, newH);
             } else {
-                Point surfPt = SwingUtilities.convertPoint(target, e.getPoint(), DesignSurfacePanel.this);
+                // compute the raw new location in parent coords
+                Point surfPt   = SwingUtilities.convertPoint(target, e.getPoint(), DesignSurfacePanel.this);
                 Point parentPt = SwingUtilities.convertPoint(DesignSurfacePanel.this, surfPt, target.getParent());
+                Rectangle r    = target.getBounds();
 
-                Rectangle r = target.getBounds();
-                if (dragOffset != null) {
-                    r.setLocation(parentPt.x - dragOffset.x, parentPt.y - dragOffset.y);
+                int newX = parentPt.x - dragOffset.x;
+                int newY = parentPt.y - dragOffset.y;
+
+                // only snap when parent layout is null AND snapToGrid is ON
+                if (target.getParent().getLayout() == null && snapToGrid) {
+                    newX = Math.round((float)newX / gridSize) * gridSize;
+                    newY = Math.round((float)newY / gridSize) * gridSize;
                 }
-                target.setBounds(r);
+
+                target.setBounds(newX, newY, r.width, r.height);
             }
+
+//            else {
+//                Point surfPt = SwingUtilities.convertPoint(target, e.getPoint(), DesignSurfacePanel.this);
+//                Point parentPt = SwingUtilities.convertPoint(DesignSurfacePanel.this, surfPt, target.getParent());
+//
+//                Rectangle r = target.getBounds();
+//                if (dragOffset != null) {
+//                    r.setLocation(parentPt.x - dragOffset.x, parentPt.y - dragOffset.y);
+//                }
+//                target.setBounds(r);
+//            }
+
             notifyChange();
         }
 
