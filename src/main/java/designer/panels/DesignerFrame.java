@@ -68,6 +68,49 @@ public class DesignerFrame extends JFrame {
         fileMenu.add(openItem);
         fileMenu.add(saveItem);
         menuBar.add(fileMenu);
+
+        JMenu viewMenu = new JMenu("View");
+        JCheckBoxMenuItem snapItem = new JCheckBoxMenuItem("Snap to Grid");
+        snapItem.addActionListener(e -> designSurface.setSnapToGrid(snapItem.isSelected()));
+        viewMenu.add(snapItem);
+        menuBar.add(viewMenu);
+        JMenuItem gridSizeItem = new JMenuItem("Grid Size...");
+        gridSizeItem.addActionListener(e -> {
+            SpinnerNumberModel model =
+                    new SpinnerNumberModel(designSurface.getGridSize(), 1, 200, 1);
+            JSpinner spinner = new JSpinner(model);
+
+            int result = JOptionPane.showConfirmDialog(
+                    this,
+                    spinner,
+                    "Grid Size (px)",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE
+            );
+
+            if (result == JOptionPane.OK_OPTION) {
+                designSurface.setGridSize((Integer)spinner.getValue());
+            }
+        });
+        viewMenu.add(gridSizeItem);
+        JMenuItem gridColorItem = new JMenuItem("Grid Color…");
+        gridColorItem.addActionListener(e -> {
+            Color chosen = JColorChooser.showDialog(
+                    this,
+                    "Select Grid Color",
+                    designSurface.getGridColor()
+            );
+            if (chosen != null) {
+                designSurface.setGridColor(new Color(
+                        chosen.getRed(),
+                        chosen.getGreen(),
+                        chosen.getBlue(),
+                        designSurface.getGridColor().getAlpha()  // keep translucency
+                ));
+            }
+        });
+        viewMenu.add(gridColorItem);
+
         setJMenuBar(menuBar);
 
         // ─── LEFT COLUMN ───────────────────────────────────────────
