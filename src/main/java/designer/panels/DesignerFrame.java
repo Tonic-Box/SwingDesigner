@@ -204,9 +204,7 @@ public class DesignerFrame extends JFrame {
 
     /** Wire up all your listeners and keybindings. */
     private void setupListenersAndBindings() {
-        // selection → inspector
         designSurface.addSelectionListener(inspector::setTarget);
-        // design → preview & codeView
         designSurface.addDesignChangeListener(() -> {
             preview.refresh();
             codeView.getCode();

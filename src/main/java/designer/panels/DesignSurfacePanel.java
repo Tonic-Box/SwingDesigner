@@ -239,6 +239,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         if (lm instanceof BorderLayout) return "new BorderLayout()";
         if (lm instanceof GridLayout g) return "new GridLayout(" +
                 g.getRows() + "," + g.getColumns() + ")";
+        if (lm instanceof GridBagLayout) return "new GridBagLayout()";
         /* fall-back */                 return "null";
     }
 
@@ -346,9 +347,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             }
 
             // layout
-            sb.append(id).append(".setLayout(")
-                    .append(layoutExpr(jc.getLayout()))
-                    .append(");\n");
+            sb.append(id).append(".setLayout(").append(layoutExpr(jc.getLayout())).append(");\n");
 
             // background / foreground
             Color bgc = jc.getBackground(), fgc = jc.getForeground();
@@ -414,19 +413,69 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                         .append(r.width).append(", ").append(r.height)
                         .append(");\n");
             }
-            Object cons = jc.getClientProperty("layoutConstraint");
-            String constraint = cons!=null
-                    ? "BorderLayout." + cons.toString().toUpperCase()
-                    : "BorderLayout.CENTER";
-            sb.append(var).append(".add(")
-                    .append(id).append(", ").append(constraint)
-                    .append(");\n\n");
+
+            if (cont.getLayout() instanceof GridBagLayout) {
+                // 1) generate a fresh GridBagConstraints
+                sb.append("GridBagConstraints ").append(id).append("Gbc = new GridBagConstraints();\n");
+                GridBagConstraints gbc = (GridBagConstraints)
+                        ((GridBagLayout)cont.getLayout()).getConstraints(jc);
+                // 2) emit each field
+                sb.append(id).append("Gbc.gridx=").append(gbc.gridx).append(";\n");
+                sb.append(id).append("Gbc.gridy=").append(gbc.gridy).append(";\n");
+                sb.append(id).append("Gbc.gridwidth=").append(gbc.gridwidth).append(";\n");
+                sb.append(id).append("Gbc.gridheight=").append(gbc.gridheight).append(";\n");
+                sb.append(id).append("Gbc.weightx=").append(gbc.weightx).append(";\n");
+                sb.append(id).append("Gbc.weighty=").append(gbc.weighty).append(";\n");
+                sb.append(id).append("Gbc.fill=").append("GridBagConstraints.")
+                        .append(fillName(gbc.fill)).append(";\n");
+                sb.append(id).append("Gbc.anchor=").append("GridBagConstraints.")
+                        .append(anchorName(gbc.anchor)).append(";\n");
+                sb.append(id).append("Gbc.ipadx=").append(gbc.ipadx).append(";\n");
+                sb.append(id).append("Gbc.ipady=").append(gbc.ipady).append(";\n");
+                sb.append(id).append("Gbc.insets=new Insets(")
+                        .append(gbc.insets.top).append(",").append(gbc.insets.left).append(",")
+                        .append(gbc.insets.bottom).append(",").append(gbc.insets.right).append(");\n");
+                // 3) add with constraints
+                sb.append(var).append(".add(").append(id).append(", ").append(id).append("Gbc);\n\n");
+            }
+            else
+            {
+                Object cons = jc.getClientProperty("layoutConstraint");
+                String constraint = cons!=null
+                        ? "BorderLayout." + cons.toString().toUpperCase()
+                        : "BorderLayout.CENTER";
+                sb.append(var).append(".add(")
+                        .append(id).append(", ").append(constraint)
+                        .append(");\n\n");
+            }
 
             // recurse
             if (jc.getComponentCount() > 0) {
                 emitContainer(jc, id, sb, false);
             }
         }
+    }
+
+    private String fillName(int code) {
+        return switch(code){
+            case GridBagConstraints.BOTH -> "BOTH";
+            case GridBagConstraints.HORIZONTAL -> "HORIZONTAL";
+            case GridBagConstraints.VERTICAL -> "VERTICAL";
+            default -> "NONE";
+        };
+    }
+    private String anchorName(int code) {
+        return switch(code){
+            case GridBagConstraints.NORTH -> "NORTH";
+            case GridBagConstraints.NORTHEAST -> "NORTHEAST";
+            case GridBagConstraints.EAST -> "EAST";
+            case GridBagConstraints.SOUTHEAST -> "SOUTHEAST";
+            case GridBagConstraints.SOUTH -> "SOUTH";
+            case GridBagConstraints.SOUTHWEST -> "SOUTHWEST";
+            case GridBagConstraints.WEST -> "WEST";
+            case GridBagConstraints.NORTHWEST -> "NORTHWEST";
+            default -> "CENTER";
+        };
     }
 
     /** Build a full ProjectData out of the live surface. */
