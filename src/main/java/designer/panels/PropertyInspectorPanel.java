@@ -204,6 +204,8 @@ public class PropertyInspectorPanel extends JPanel {
         gbcEditorHolder.repaint();
         south.revalidate();
         south.repaint();
+        revalidate();
+        repaint();
     }
 
     private void createLabel(JComponent comp, String text) {

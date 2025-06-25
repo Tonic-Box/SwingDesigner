@@ -32,6 +32,11 @@ public class LayoutData {
             data.hgap = gl.getHgap();
             data.vgap = gl.getVgap();
 
+        } else if (lm instanceof GridBagLayout gbl) {
+            data.type = "GridBagLayout";
+            //data.hgap = gbl.getHgap();
+            //data.vgap = gbl.getVgap();
+
         } else {
             // fallback: record the layout’s class name, no other details
             data.type = lm.getClass().getSimpleName();
@@ -45,26 +50,33 @@ public class LayoutData {
             return null;
         }
         switch (type) {
-            case "FlowLayout":
-                // alignment default to CENTER, gaps default to 5
+            case "FlowLayout": {
                 int align = alignment != null ? alignment : FlowLayout.CENTER;
-                int fh = hgap      != null ? hgap      : 5;
-                int fv = vgap      != null ? vgap      : 5;
+                int fh    = hgap      != null ? hgap      : 5;
+                int fv    = vgap      != null ? vgap      : 5;
                 return new FlowLayout(align, fh, fv);
+            }
 
-            case "BorderLayout":
-                // gaps default to 0
+            case "BorderLayout": {
                 int bh = hgap != null ? hgap : 0;
                 int bv = vgap != null ? vgap : 0;
                 return new BorderLayout(bh, bv);
+            }
 
-            case "GridLayout":
-                // rows/cols default to 1; gaps default to 0
+            case "GridLayout": {
                 int gr = rows != null ? rows : 1;
                 int gc = cols != null ? cols : 1;
                 int gh = hgap  != null ? hgap  : 0;
                 int gv = vgap  != null ? vgap  : 0;
                 return new GridLayout(gr, gc, gh, gv);
+            }
+
+            case "GridBagLayout": {
+                GridBagLayout gbl = new GridBagLayout();
+                //gbl.setHgap(hgap != null ? hgap : 0);
+                //gbl.setVgap(vgap != null ? vgap : 0);
+                return gbl;
+            }
 
             default:
                 // unknown layout type
