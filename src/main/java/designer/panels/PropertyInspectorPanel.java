@@ -134,7 +134,7 @@ public class PropertyInspectorPanel extends JPanel {
             Component tgt = model.getTarget();
             if (!(tgt instanceof JComponent jc)) return;
             Container parent = jc.getParent();
-            if (!(parent.getLayout() instanceof GridLayout gl)) return;
+            if (parent == null || !(parent.getLayout() instanceof GridLayout gl)) return;
             int total = parent.getComponentCount();
             int rows  = gl.getRows(), cols = gl.getColumns();
             if (rows==0 && cols>0) rows = (total + cols - 1)/cols;
