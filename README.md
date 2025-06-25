@@ -3,8 +3,4 @@ A visual java swing ui designer.
 
 Build with java 18+
 
-![image](https://github.com/user-attachments/assets/b3e8c90a-02d0-42ff-8a2a-73198f0f103a)
-
-
-
-
+![image](https://github.com/user-attachments/assets/e8890090-3e85-4bf3-9191-3c791affdfa7)
