@@ -10,11 +10,15 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.beans.PropertyDescriptor;
+import java.util.regex.Pattern;
 
 public class PropertyInspectorPanel extends JPanel {
     private final PropertyTableModel model;
@@ -38,8 +42,18 @@ public class PropertyInspectorPanel extends JPanel {
 
         this.model = new PropertyTableModel(ds::externalPropertyChanged);
 
-        setBorder(new EmptyBorder(5,5,5,5));
-        add(new JLabel("Property Inspector"), BorderLayout.NORTH);
+        // ─── NORTH: header + search bar ────────────────────────────
+        JPanel north = new JPanel(new BorderLayout(5,0));
+        north.setBorder(new EmptyBorder(5,5,5,5));
+        north.add(new JLabel("Property Inspector"), BorderLayout.NORTH);
+
+        JPanel searchPanel = new JPanel(new BorderLayout(5,0));
+        JTextField searchField = new JTextField();
+        searchPanel.add(new JLabel("Filter: "), BorderLayout.WEST);
+        searchPanel.add(searchField, BorderLayout.CENTER);
+
+        north.add(searchPanel, BorderLayout.SOUTH);
+        add(north, BorderLayout.NORTH);
 
         // ─── property table ─────────────────────────────────────────
         JTable table = new JTable(model) {
@@ -55,39 +69,60 @@ public class PropertyInspectorPanel extends JPanel {
             private final DimensionCellEditor dimEdit   = new DimensionCellEditor();
 
             @Override
-            public TableCellRenderer getCellRenderer(int row, int col) {
+            public TableCellRenderer getCellRenderer(int viewRow, int col) {
                 if (col == 1) {
-                    PropertyDescriptor pd = model.getPropertyDescriptor(row);
+                    int modelRow = convertRowIndexToModel(viewRow);
+                    PropertyDescriptor pd = model.getPropertyDescriptor(modelRow);
                     if (pd != null) {
                         Class<?> t = pd.getPropertyType();
-                        if (t == JPopupMenu.class)                        return new PopupMenuCellRenderer();
-                        if (t == Dimension.class)                        return dimRend;
-                        if (t == Color.class)                            return colorRend;
-                        if (t == Font.class)                             return fontRend;
-                        if (t != null && Border.class.isAssignableFrom(t)) return borderRend;
+                        if (t == JPopupMenu.class)            return new PopupMenuCellRenderer();
+                        if (t == Dimension.class)            return dimRend;
+                        if (t == Color.class)                return colorRend;
+                        if (t == Font.class)                 return fontRend;
+                        if (Border.class.isAssignableFrom(t))return borderRend;
                     }
                 }
-                return super.getCellRenderer(row, col);
+                return super.getCellRenderer(viewRow, col);
             }
 
             @Override
-            public TableCellEditor getCellEditor(int row, int col) {
+            public TableCellEditor getCellEditor(int viewRow, int col) {
                 if (col == 1) {
-                    PropertyDescriptor pd = model.getPropertyDescriptor(row);
+                    int modelRow = convertRowIndexToModel(viewRow);
+                    PropertyDescriptor pd = model.getPropertyDescriptor(modelRow);
                     if (pd != null) {
                         Class<?> t = pd.getPropertyType();
-                        if (t == JPopupMenu.class)                        return new PopupMenuCellEditor();
-                        if (t == Dimension.class)                        return dimEdit;
-                        if (t == Color.class)                            return colorEdit;
-                        if (t == Font.class)                             return fontEdit;
-                        if (Border.class.isAssignableFrom(t))             return borderEdit;
-                        if (LayoutManager.class.isAssignableFrom(t))      return layoutEdit;
-                        if (t == Boolean.class || t == boolean.class)     return boolEdit;
+                        if (t == JPopupMenu.class)                return new PopupMenuCellEditor();
+                        if (t == Dimension.class)                return dimEdit;
+                        if (t == Color.class)                    return colorEdit;
+                        if (t == Font.class)                     return fontEdit;
+                        if (Border.class.isAssignableFrom(t))     return borderEdit;
+                        if (LayoutManager.class.isAssignableFrom(t)) return layoutEdit;
+                        if (t == Boolean.class || t == boolean.class) return boolEdit;
                     }
                 }
-                return super.getCellEditor(row, col);
+                return super.getCellEditor(viewRow, col);
             }
         };
+        add(new JScrollPane(table), BorderLayout.CENTER);
+
+        TableRowSorter<PropertyTableModel> sorter = new TableRowSorter<>(model);
+        table.setRowSorter(sorter);
+
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            private void update() {
+                String txt = searchField.getText().trim();
+                if (txt.isEmpty()) {
+                    sorter.setRowFilter(null);
+                } else {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(txt), 0));
+                }
+            }
+            public void insertUpdate(DocumentEvent e) { update(); }
+            public void removeUpdate(DocumentEvent e) { update(); }
+            public void changedUpdate(DocumentEvent e){ update(); }
+        });
+
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         // ─── constraint chooser (BorderLayout) ───────────────────────
