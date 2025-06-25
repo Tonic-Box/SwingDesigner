@@ -833,6 +833,13 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             if (resizing) {
                 int newW = Math.max(20, e.getX());
                 int newH = Math.max(20, e.getY());
+
+                // snap to grid when appropriate
+                if (snapToGrid && target.getParent().getLayout() == null) {
+                    newW = Math.round((float)newW / gridSize) * gridSize;
+                    newH = Math.round((float)newH / gridSize) * gridSize;
+                }
+
                 target.setSize(newW, newH);
             } else {
                 // compute the raw new location in parent coords
@@ -851,17 +858,6 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
                 target.setBounds(newX, newY, r.width, r.height);
             }
-
-//            else {
-//                Point surfPt = SwingUtilities.convertPoint(target, e.getPoint(), DesignSurfacePanel.this);
-//                Point parentPt = SwingUtilities.convertPoint(DesignSurfacePanel.this, surfPt, target.getParent());
-//
-//                Rectangle r = target.getBounds();
-//                if (dragOffset != null) {
-//                    r.setLocation(parentPt.x - dragOffset.x, parentPt.y - dragOffset.y);
-//                }
-//                target.setBounds(r);
-//            }
 
             notifyChange();
         }

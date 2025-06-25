@@ -93,7 +93,7 @@ public class DesignerFrame extends JFrame {
             }
         });
         viewMenu.add(gridSizeItem);
-        JMenuItem gridColorItem = new JMenuItem("Grid Color…");
+        JMenuItem gridColorItem = new JMenuItem("Grid Color...");
         gridColorItem.addActionListener(e -> {
             Color chosen = JColorChooser.showDialog(
                     this,
