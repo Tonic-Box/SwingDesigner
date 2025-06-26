@@ -31,6 +31,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
     public DesignSurfacePanel() {
         super(null);
+        setName("panel");
         setBackground(new Color(SwingDesignerApp.BG_DARK.getRGB()));
         setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         new DropTarget(this, DnDConstants.ACTION_COPY, this, true);
