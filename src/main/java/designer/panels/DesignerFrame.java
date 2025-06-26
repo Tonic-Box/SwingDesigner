@@ -70,6 +70,9 @@ public class DesignerFrame extends JFrame {
         menuBar.add(fileMenu);
 
         JMenu viewMenu = new JMenu("View");
+        JCheckBoxMenuItem lockItem = new JCheckBoxMenuItem("Lock Components");
+        lockItem.addActionListener(e -> designSurface.setLockComponents(lockItem.isSelected()));
+        viewMenu.add(lockItem);
         JCheckBoxMenuItem snapItem = new JCheckBoxMenuItem("Snap to Grid");
         snapItem.addActionListener(e -> designSurface.setSnapToGrid(snapItem.isSelected()));
         viewMenu.add(snapItem);
@@ -173,6 +176,16 @@ public class DesignerFrame extends JFrame {
                     "import designer.panels.DesignSurfacePanel;\n" +
                             "import javax.swing.*;\n" +
                             "import java.awt.*;\n" +
+                            "import java.awt.datatransfer.DataFlavor;\n" +
+                            "import java.awt.dnd.*;\n" +
+                            "import java.awt.event.MouseAdapter;\n" +
+                            "import java.awt.event.MouseEvent;\n" +
+                            "import java.awt.event.MouseListener;\n" +
+                            "import java.awt.geom.Area;\n" +
+                            "import java.util.*;\n" +
+                            "import java.util.List;\n" +
+                            "import java.util.concurrent.atomic.AtomicInteger;\n" +
+                            "import java.util.stream.Collectors;\n" +
                             "public class " + className + " {\n" +
                             "  public static void apply(DesignSurfacePanel ds) throws Exception {\n" +
                             "    // reuse the existing designer panel as our root\n" +
