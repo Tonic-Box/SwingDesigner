@@ -36,7 +36,7 @@ public class PropertyInspectorPanel extends JPanel {
     private final JPanel constraintPanel;
     private final JPanel gridConfigPanel;
     private final JPanel cellPosPanel;
-    private final JPanel wrapper;
+    private final JLabel componentNameLabel;
 
     public PropertyInspectorPanel(DesignSurfacePanel ds) {
         super(new BorderLayout());
@@ -46,10 +46,15 @@ public class PropertyInspectorPanel extends JPanel {
 
         this.model = new PropertyTableModel(ds::externalPropertyChanged);
 
-        // ─── NORTH: header + search bar ────────────────────────────
+        // ─── NORTH: header + selected name + search bar ─────────────────────
         JPanel north = new JPanel(new BorderLayout(5,0));
         north.setBorder(new EmptyBorder(5,5,5,5));
-        north.add(new JLabel("Property Inspector"), BorderLayout.NORTH);
+
+        north.add(new JLabel("<html><b>Property Inspector</b></html>"), BorderLayout.NORTH);
+
+        componentNameLabel = new JLabel("<html><b>Selected:</b> (none)</html>");
+        //componentNameLabel.setFont(componentNameLabel.getFont().deriveFont(Font.BOLD));
+        north.add(componentNameLabel, BorderLayout.CENTER);
 
         JPanel searchPanel = new JPanel(new BorderLayout(5,0));
         JTextField searchField = new JTextField();
@@ -239,7 +244,6 @@ public class PropertyInspectorPanel extends JPanel {
         southWrapper.add(gridConfigPanel, BorderLayout.NORTH);
         southWrapper.add(south,       BorderLayout.CENTER);
         add(southWrapper, BorderLayout.SOUTH);
-        this.wrapper   = southWrapper;
     }
 
     private String getVisibleSouthCard() {
@@ -305,6 +309,15 @@ public class PropertyInspectorPanel extends JPanel {
      */
     public void setTarget(Component c) {
         model.setTarget(c);
+
+        if (c instanceof JComponent jc && jc.getName() != null) {
+            componentNameLabel.setText(
+                    "<html><b>Selected:</b> " + jc.getName() + "</html>"
+            );
+        } else {
+            componentNameLabel.setText("<html><b>Selected:</b> (none)</html>");
+        }
+
         // clear any previous GridBag editor
         gbcEditorHolder.removeAll();
 
