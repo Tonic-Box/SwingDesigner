@@ -316,7 +316,7 @@ public class PropertyInspectorPanel extends JPanel {
         Container parent = jc.getParent();
 
         // 1) BorderLayout constraint
-        if (parent.getLayout() instanceof BorderLayout) {
+        if (parent != null && parent.getLayout() instanceof BorderLayout) {
             Object stored = jc.getClientProperty("layoutConstraint");
             constraintCombo.setSelectedItem(stored != null ? stored : "Center");
         }

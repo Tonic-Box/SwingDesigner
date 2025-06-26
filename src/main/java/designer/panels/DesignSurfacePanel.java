@@ -797,7 +797,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             Container newParent = findContainerAt(center, target);
             if (newParent == null) newParent = DesignSurfacePanel.this;
 
-            if (newParent != target.getParent()) {
+            if (newParent != target.getParent() && newParent != target) {
                 // calculate new location
                 Point loc = convertPointTo(newParent, center);
                 loc.translate(-target.getWidth()/2, -target.getHeight()/2);
