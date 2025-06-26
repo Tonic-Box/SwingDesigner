@@ -389,10 +389,41 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             sb.append(id).append(".setName(\"").append(id).append("\");\n");
 
             // text if applicable
-            if (jc instanceof AbstractButton but && but.getText() != null) {
-                sb.append(id).append(".setText(\"")
-                        .append(but.getText().replace("\"","\\\""))
+            if (jc instanceof AbstractButton ab && ab.getText() != null) {
+                sb.append(id)
+                        .append(".setText(\"")
+                        .append(ab.getText().replace("\"", "\\\""))
                         .append("\");\n");
+            }
+            else if (jc instanceof JLabel lbl && lbl.getText() != null) {
+                sb.append(id)
+                        .append(".setText(\"")
+                        .append(lbl.getText().replace("\"", "\\\""))
+                        .append("\");\n");
+            }
+            else if (jc instanceof javax.swing.text.JTextComponent tc && tc.getText() != null) {
+                sb.append(id)
+                        .append(".setText(\"")
+                        .append(tc.getText().replace("\"", "\\\""))
+                        .append("\");\n");
+            }
+            else if (jc instanceof JComboBox<?> combo) {
+                Object sel = combo.getSelectedItem();
+                if (sel != null) {
+                    sb.append(id)
+                            .append(".setSelectedItem(\"")
+                            .append(sel.toString().replace("\"", "\\\""))
+                            .append("\");\n");
+                }
+            }
+            else if (jc instanceof JSpinner spinner) {
+                Object val = spinner.getValue();
+                if (val != null) {
+                    sb.append(id)
+                            .append(".setValue(")
+                            .append(val instanceof Number ? val : "\"" + val.toString().replace("\"", "\\\"") + "\"")
+                            .append(");\n");
+                }
             }
 
             // layout
@@ -409,6 +440,11 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 sb.append(id).append(".setForeground(new Color(0x")
                         .append(String.format("%06X", fgc.getRGB() & 0xFFFFFF))
                         .append("));\n");
+            }
+
+            if(!jc.isVisible())
+            {
+                sb.append(id).append(".setVisible(false);\n");
             }
 
             // ─── popup-menu by reference ─────────────────────────────
