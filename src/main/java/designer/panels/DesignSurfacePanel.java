@@ -385,6 +385,8 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                     .append(" = new ").append(jc.getClass().getSimpleName())
                     .append("();\n");
 
+            sb.append(id).append(".setName(\"").append(id).append("\");\n");
+
             // text if applicable
             if (jc instanceof AbstractButton but && but.getText() != null) {
                 sb.append(id).append(".setText(\"")
