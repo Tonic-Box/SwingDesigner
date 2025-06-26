@@ -17,6 +17,8 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.beans.PropertyDescriptor;
 import java.util.regex.Pattern;
 
@@ -28,11 +30,13 @@ public class PropertyInspectorPanel extends JPanel {
     private final JSpinner cellRowSpinner, cellColSpinner;
     private final JComboBox<PositionType> positionCombo;
     private final JPanel gbcEditorHolder;
+    private final JScrollPane gbcScroll;
     private final JPanel south;
     private final JPanel positionPanel;
     private final JPanel constraintPanel;
     private final JPanel gridConfigPanel;
     private final JPanel cellPosPanel;
+    private final JPanel wrapper;
 
     public PropertyInspectorPanel(DesignSurfacePanel ds) {
         super(new BorderLayout());
@@ -186,8 +190,8 @@ public class PropertyInspectorPanel extends JPanel {
         cellColSpinner.addChangeListener(cellChange);
 
         // ─── assemble south stack ─────────────────────────────────────
-        south = new JPanel();
-        south.setLayout(new BoxLayout(south,BoxLayout.Y_AXIS));
+        south = new JPanel(new CardLayout());
+        //south.setLayout(new BoxLayout(south,BoxLayout.Y_AXIS));
 
         positionCombo = new JComboBox<>(PositionType.values());
         positionCombo.addActionListener(e -> {
@@ -202,24 +206,71 @@ public class PropertyInspectorPanel extends JPanel {
         positionPanel.add(new JLabel("Position Type:"));
         positionPanel.add(positionCombo);
 
-        // GridBagConstraints editor placeholder
         gbcEditorHolder = new JPanel(new BorderLayout());
-        add(south, BorderLayout.SOUTH);
+
+        south.add(constraintPanel, "BORDER");
+        south.add(cellPosPanel,    "GRID_CELL");
+        south.add(positionPanel,   "ABSOLUTE");
+
+        gbcScroll = new JScrollPane(
+                gbcEditorHolder,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+        );
+        gbcScroll.setPreferredSize(new Dimension(0, 50));
+        gbcScroll.getViewport().addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                Component view = gbcScroll.getViewport().getView();
+                if (view != null) {
+                    Dimension pref = view.getPreferredSize();
+                    pref.width = gbcScroll.getViewport().getWidth();
+                    pref.height = "GRIDBAG".equals(getVisibleSouthCard()) ? Math.max(150, pref.height) : 50;
+                    view.setPreferredSize(pref);
+                    gbcEditorHolder.revalidate();
+                }
+            }
+        });
+
+        south.add(gbcScroll, "GRIDBAG");
+
+        JPanel southWrapper = new JPanel(new BorderLayout());
+        gridConfigPanel.setVisible(false);
+        southWrapper.add(gridConfigPanel, BorderLayout.NORTH);
+        southWrapper.add(south,       BorderLayout.CENTER);
+        add(southWrapper, BorderLayout.SOUTH);
+        this.wrapper   = southWrapper;
+    }
+
+    private String getVisibleSouthCard() {
+        for (Component c : south.getComponents()) {
+            if (c.isVisible()) {
+                // if you need the name, keep a parallel array/dictionary
+                // mapping index→cardName, or compare against your known panels:
+                if (c == constraintPanel) return "BORDER";
+                if (c == cellPosPanel)    return "GRID_CELL";
+                if (c == positionPanel)   return "ABSOLUTE";
+                if (c == gbcScroll)       return "GRIDBAG";
+            }
+        }
+        return null;
     }
 
     private void buildSouthPanel(LayoutManager layout, JComponent jc) {
         gbcEditorHolder.removeAll();
-        south.removeAll();
+        CardLayout cards = (CardLayout)south.getLayout();
+        boolean showGridCfg = jc.getLayout() instanceof GridLayout;
+        gridConfigPanel.setVisible(showGridCfg);
+
+        gbcScroll.setPreferredSize(new Dimension(0, 0));
+
         if (layout instanceof BorderLayout) {
-            south.add(constraintPanel);
+            cards.show(south, "BORDER");
         }
-        if (jc.getLayout() instanceof GridLayout) {
-            south.add(gridConfigPanel);
+        else if (layout instanceof GridLayout) {
+            cards.show(south, "GRID_CELL");
         }
-        if (layout instanceof GridLayout) {
-            south.add(cellPosPanel);
-        }
-        if (layout instanceof GridBagLayout) {
+        else if (layout instanceof GridBagLayout) {
             GridBagLayout gbl = (GridBagLayout) layout;
             GridBagConstraints gbc = gbl.getConstraints(jc);
             GridBagConstraintsEditor editor = new GridBagConstraintsEditor();
@@ -230,10 +281,11 @@ public class PropertyInspectorPanel extends JPanel {
             });
             gbcEditorHolder.add(new JLabel("GridBag Constraints:"), BorderLayout.NORTH);
             gbcEditorHolder.add(new JScrollPane(editor), BorderLayout.CENTER);
-            south.add(gbcEditorHolder);
+            cards.show(south, "GRIDBAG");
+            gbcScroll.setPreferredSize(new Dimension(0, 200));
         }
-        if (layout == null) {
-            south.add(positionPanel);
+        else if (layout == null) {
+            cards.show(south, "ABSOLUTE");
         }
         gbcEditorHolder.revalidate();
         gbcEditorHolder.repaint();
