@@ -523,7 +523,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         ProjectData proj = new ProjectData();
         // 1) root
         proj.root = buildComponentData(this);
-        proj.userCode = frame.codeView.getUserCode();
+        proj.userCode = frame.codeView.getCode();
         // 2) all popup menus
         proj.popupMenus = PopupMenuManager.getMenuNames().stream()
                 .map(name -> {
@@ -824,6 +824,10 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
         @Override
         public void mouseDragged(MouseEvent e) {
+            if (dragOffset == null) {
+                return;
+            }
+
             PositionType positionType = (PositionType) target.getClientProperty("positionType");
             if (positionType == PositionType.RELATIVE) {
                 // Disable dragging in RELATIVE mode

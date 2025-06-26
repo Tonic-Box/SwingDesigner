@@ -2,8 +2,8 @@ package designer.panels;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import designer.SwingDesignerApp;
-import designer.misc.MergingUtil;
 import designer.misc.PopupMenuManager;
+import designer.misc.ResourceUtil;
 import designer.model.MenuItemData;
 import designer.model.PopupMenuData;
 import designer.model.ProjectData;
@@ -31,6 +31,7 @@ public class DesignerFrame extends JFrame {
     private DesignSurfacePanel designSurface;
     private final PropertyInspectorPanel inspector;
     public final CodeViewPanel codeView;
+    public final CodeViewPanel designerView;
     private PreviewPanel preview;
     private final JTabbedPane leftTabs;
     private ComponentHierarchyPanel hierarchyPanel;
@@ -39,17 +40,16 @@ public class DesignerFrame extends JFrame {
     public DesignerFrame() {
         super("Swing Visual Designer");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setIconImage(loadImageResource(SwingDesignerApp.class, "icon.png"));
+        setIconImage(ResourceUtil.loadImageResource(SwingDesignerApp.class, "icon.png"));
         setSize(1400, 850);
         setLocationRelativeTo(null);
 
         // initialize panels
         designSurface = new DesignSurfacePanel();
         inspector     = new PropertyInspectorPanel(designSurface);
-        codeView      = new CodeViewPanel();
+        designerView = new CodeViewPanel();
+        codeView = new CodeViewPanel();
         preview       = new PreviewPanel(designSurface);
-
-        codeView.onRun(e -> compileAndApply(codeView.getCode()));
 
         // init chooser
         lastDirectory = new File(System.getProperty("user.home"));
@@ -143,8 +143,10 @@ public class DesignerFrame extends JFrame {
         mainSplit.setDividerLocation(260);
         mainSplit.setResizeWeight(0.0);
 
+        CodeTabbedPane codeTabs = new CodeTabbedPane(designerView, codeView);
+        codeTabs.onRun(e -> compileAndApply(designerView.getCode(), codeView.getCode()));
         JSplitPane outerSplit = new JSplitPane(
-                JSplitPane.HORIZONTAL_SPLIT, mainSplit, codeView
+                JSplitPane.HORIZONTAL_SPLIT, mainSplit, codeTabs
         );
         outerSplit.setDividerLocation(900);
         outerSplit.setResizeWeight(1.0);
@@ -154,7 +156,7 @@ public class DesignerFrame extends JFrame {
         // ─── WIRING (listeners, keybindings) ───────────────────────
         setupListenersAndBindings();
 
-        codeView.setCode(MergingUtil.merge(designSurface.generateCode(), codeView.getCachedCode()));
+        designerView.setCode(designSurface.generateCode());
     }
 
     /**
@@ -163,7 +165,7 @@ public class DesignerFrame extends JFrame {
      * 3) Load it with a URLClassLoader
      * 4) Call its static apply(DesignSurfacePanel) method to mutate your live surface
      */
-    private void compileAndApply(String userCode) {
+    private void compileAndApply(String designCode, String userCode) {
         try {
             String className = "LiveDesign";
             // 1) Build full source with imports, reusing the existing root panel
@@ -178,7 +180,8 @@ public class DesignerFrame extends JFrame {
                             "    // clear out any old children\n" +
                             "    panel.removeAll();\n" +
                             // insert the user's layout code directly into the existing panel
-                            userCode.replace("JPanel panel = new JPanel();", "") + "\n" +
+                            designCode.replace("JPanel panel = new JPanel();", "") + "\n" +
+                            userCode + "\n" +
                             "    // refresh display\n" +
                             "    panel.revalidate(); panel.repaint();\n" +
                             "    // fire design changed so hierarchy & inspector update\n" +
@@ -228,30 +231,12 @@ public class DesignerFrame extends JFrame {
         }
     }
 
-
-    public static BufferedImage loadImageResource(final Class<?> c, final String path)
-    {
-        try (InputStream in = c.getResourceAsStream(path))
-        {
-            assert in != null;
-            synchronized (ImageIO.class)
-            {
-                return ImageIO.read(in);
-            }
-        }
-        catch (Exception ignored)
-        {
-        }
-        return null;
-    }
-
     /** Wire up all your listeners and keybindings. */
     private void setupListenersAndBindings() {
         designSurface.addSelectionListener(inspector::setTarget);
         designSurface.addDesignChangeListener(() -> {
             preview.refresh();
-            codeView.getCode();
-            codeView.setCode(MergingUtil.merge(designSurface.generateCode(), codeView.getCachedCode()));
+            designerView.setCode(designSurface.generateCode());
             //codeView.setCode(designSurface.generateCode());
         });
 
@@ -268,6 +253,7 @@ public class DesignerFrame extends JFrame {
 
     /** Clears everything to start a brand-new project. */
     private void newProject() {
+        designerView.setCode("");
         codeView.setCode("");
         designSurface = new DesignSurfacePanel();
         preview       = new PreviewPanel(designSurface);
@@ -283,7 +269,7 @@ public class DesignerFrame extends JFrame {
 
         setupListenersAndBindings();
         currentFile = null;
-        codeView.setCode(MergingUtil.merge(designSurface.generateCode(), codeView.getCachedCode()));
+        designerView.setCode(designSurface.generateCode());
     }
 
     private void saveProject() {
@@ -313,7 +299,7 @@ public class DesignerFrame extends JFrame {
 
     /** Load a project JSON and rebuild the surface from it. */
     private void openProject() {
-        codeView.setCode("");
+        designerView.setCode("");
         fileChooser.setCurrentDirectory(lastDirectory);
         fileChooser.setDialogTitle("Open Project");
 
@@ -343,6 +329,7 @@ public class DesignerFrame extends JFrame {
                 PopupMenuManager.putMenu(pmData.name, menu);
             }
 
+            codeView.setCode(proj.userCode);
             designSurface.importProject(proj);
 
             hierarchyPanel.designChanged();
@@ -351,7 +338,7 @@ public class DesignerFrame extends JFrame {
             centerTabs.setComponentAt(1, preview);
             setupListenersAndBindings();
             preview.refresh();
-            codeView.setCode(MergingUtil.merge(designSurface.generateCode(), "// ---- user code ----\n" + proj.userCode));
+            designerView.setCode(designSurface.generateCode());
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(

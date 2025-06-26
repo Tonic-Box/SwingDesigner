@@ -10,9 +10,6 @@ import java.io.IOException;
 
 public class CodeViewPanel extends JPanel {
     private final ExRSyntaxTextArea area;
-    private final JButton runButton = new JButton("Run");
-    private ActionListener runListener;
-    private String cachedCode = "";
 
     public CodeViewPanel(){
         super(new BorderLayout());
@@ -20,8 +17,6 @@ public class CodeViewPanel extends JPanel {
 
         // — top bar with label + run button —
         JPanel top = new JPanel(new BorderLayout());
-        top.add(new JLabel("Generated Code"), BorderLayout.WEST);
-        top.add(runButton, BorderLayout.EAST);
         add(top, BorderLayout.NORTH);
 
         // — code area —
@@ -29,34 +24,13 @@ public class CodeViewPanel extends JPanel {
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         area.setEditable(true);
         add(new JScrollPane(area), BorderLayout.CENTER);
-
-        runButton.addActionListener(e -> {
-            if (runListener != null) runListener.actionPerformed(e);
-        });
     }
 
     public void setCode(String code){
-        cachedCode = code;
         area.setText(code);
     }
 
     public String getCode(){
-        cachedCode = area.getText();
         return area.getText();
-    }
-
-    public String getCachedCode(){
-        return cachedCode;
-    }
-
-    /** DesignerFrame will call this to hook in the compile-and-apply action */
-    public void onRun(ActionListener l){
-        this.runListener = l;
-    }
-
-    public String getUserCode()
-    {
-        String[] parts = area.getText().split("// ---- user code ----");
-        return parts.length > 1 ? parts[1].trim() : "";
     }
 }
