@@ -25,6 +25,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
     private final AtomicInteger idSeq   = new AtomicInteger();
     private int anonCount = 0;
     private boolean snapToGrid = false;
+    private boolean lockComponents = false;
     private int     gridSize   = 10;
     private Color   gridColor  = new Color(200, 200, 200, 64);
 
@@ -50,6 +51,11 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 repaint();
             }
         });
+    }
+
+    public void setLockComponents(boolean lock)
+    {
+        this.lockComponents = lock;
     }
 
     /** Called by DesignerFrame when the user toggles Snap to Grid */
@@ -788,6 +794,11 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         public void mouseReleased(MouseEvent e) {
             maybeShowPopup(e);
 
+            if(lockComponents) {
+                // if components are locked, do not allow any dragging or resizing
+                return;
+            }
+
             /* re-parent if dropped over a different panel */
             Point center = SwingUtilities.convertPoint(
                     target,
@@ -797,10 +808,10 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             Container newParent = findContainerAt(center, target);
             if (newParent == null) newParent = DesignSurfacePanel.this;
 
-            if (newParent != target.getParent() && newParent != target) {
+            if (newParent != target.getParent() && newParent != target && !SwingUtilities.isDescendingFrom(newParent, target)) {
                 // calculate new location
                 Point loc = convertPointTo(newParent, center);
-                loc.translate(-target.getWidth()/2, -target.getHeight()/2);
+                loc.translate(-target.getWidth() / 2, -target.getHeight() / 2);
 
                 // remove from old, add to new with constraint if needed
                 Container oldParent = target.getParent();
@@ -809,14 +820,16 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 LayoutManager lm = newParent.getLayout();
                 Object cons = target.getClientProperty("layoutConstraint");
                 if (lm instanceof BorderLayout) {
-                    String c = (cons instanceof String ? (String)cons : "Center");
+                    String c = (cons instanceof String ? (String) cons : "Center");
                     newParent.add(target, c);
-                } else {
+                }
+                else {
                     newParent.add(target);
                 }
 
                 target.setLocation(loc);
                 notifySelection(target);
+                System.out.println("");
             }
 
             notifyChange();
@@ -824,7 +837,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            if (dragOffset == null) {
+            if (dragOffset == null || lockComponents) {
                 return;
             }
 
