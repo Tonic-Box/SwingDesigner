@@ -6,6 +6,7 @@ import designer.model.*;
 import designer.types.PositionType;
 
 import javax.swing.*;
+import javax.swing.border.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.*;
@@ -426,6 +427,32 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 }
             }
 
+            Font font = jc.getFont();
+            if (font != null) {
+                sb.append(id)
+                        .append(".setFont(new Font(\"")
+                        .append(font.getFamily().replace("\"", "\\\""))
+                        .append("\", ")
+                        .append(fontStyleExpr(font.getStyle()))
+                        .append(", ")
+                        .append(font.getSize())
+                        .append("));\n");
+            }
+
+            if(jc.getAutoscrolls())
+            {
+                sb.append(id).append(".setAutoscrolls(true);\n");
+            }
+
+            Border border = jc.getBorder();
+            String data = borderExpr(border);
+            if (border != null && !data.isEmpty()) {
+                sb.append(id)
+                        .append(".setBorder(")
+                        .append(borderExpr(border))
+                        .append(");\n");
+            }
+
             // layout
             sb.append(id).append(".setLayout(").append(layoutExpr(jc.getLayout())).append(");\n");
 
@@ -502,8 +529,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             if (cont.getLayout() instanceof GridBagLayout) {
                 // 1) generate a fresh GridBagConstraints
                 sb.append("GridBagConstraints ").append(id).append("Gbc = new GridBagConstraints();\n");
-                GridBagConstraints gbc = (GridBagConstraints)
-                        ((GridBagLayout)cont.getLayout()).getConstraints(jc);
+                GridBagConstraints gbc = ((GridBagLayout)cont.getLayout()).getConstraints(jc);
                 // 2) emit each field
                 sb.append(id).append("Gbc.gridx=").append(gbc.gridx).append(";\n");
                 sb.append(id).append("Gbc.gridy=").append(gbc.gridy).append(";\n");
@@ -540,6 +566,49 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             }
         }
     }
+
+    /**
+     * Convert Font style int into a Font.* constant expression.
+     */
+    private String fontStyleExpr(int style) {
+        return switch (style) {
+            case Font.BOLD -> "Font.BOLD";
+            case Font.ITALIC -> "Font.ITALIC";
+            case Font.BOLD | Font.ITALIC -> "Font.BOLD | Font.ITALIC";
+            default -> "Font.PLAIN";
+        };
+    }
+
+    /**
+     * Emit a BorderFactory expression for common Swing borders.
+     */
+    private String borderExpr(Border b) {
+        if (b instanceof LineBorder lb) {
+            Color c = lb.getLineColor();
+            int t = lb.getThickness();
+            return "BorderFactory.createLineBorder(new Color(0x"
+                    + String.format("%06X", c.getRGB() & 0xFFFFFF)
+                    + "), " + t + ")";
+        }
+        else if (b instanceof EmptyBorder eb) {
+            Insets i = eb.getBorderInsets();
+            return "BorderFactory.createEmptyBorder("
+                    + i.top + ", " + i.left + ", "
+                    + i.bottom + ", " + i.right + ")";
+        }
+        else if (b instanceof EtchedBorder) {
+            return "BorderFactory.createEtchedBorder()";
+        }
+        else if (b instanceof TitledBorder tb) {
+            String title = tb.getTitle().replace("\"", "\\\"");
+            return "BorderFactory.createTitledBorder(\"" + title + "\")";
+        }
+        else {
+            // fallback for unhandled border types
+            return "";
+        }
+    }
+
 
     private String fillName(int code) {
         return switch(code){
@@ -868,7 +937,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
                 target.setLocation(loc);
                 notifySelection(target);
-                System.out.println("");
+                System.out.println();
             }
 
             notifyChange();
