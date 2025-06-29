@@ -1,4 +1,4 @@
-package designer.editors;
+package designer.ui.editors;
 
 import designer.types.Layouts;
 

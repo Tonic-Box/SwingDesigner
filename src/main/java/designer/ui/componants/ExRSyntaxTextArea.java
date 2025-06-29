@@ -1,4 +1,4 @@
-package designer.types;
+package designer.ui.componants;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaHighlighter;

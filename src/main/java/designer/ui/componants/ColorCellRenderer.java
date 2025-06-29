@@ -1,4 +1,4 @@
-package designer.misc;
+package designer.ui.componants;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;

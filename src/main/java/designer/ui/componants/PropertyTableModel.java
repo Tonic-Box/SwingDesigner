@@ -1,4 +1,4 @@
-package designer.misc;
+package designer.ui.componants;
 
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;

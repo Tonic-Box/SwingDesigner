@@ -1,9 +1,9 @@
-package designer.panels;
+package designer.ui;
 
-import designer.editors.*;
-import designer.misc.ColorCellRenderer;
-import designer.misc.PopupMenuManager;
-import designer.misc.PropertyTableModel;
+import designer.ui.editors.*;
+import designer.ui.componants.ColorCellRenderer;
+import designer.util.PopupMenuManager;
+import designer.ui.componants.PropertyTableModel;
 import designer.types.PositionType;
 
 import javax.swing.*;

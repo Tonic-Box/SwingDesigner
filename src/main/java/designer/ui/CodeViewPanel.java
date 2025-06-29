@@ -1,12 +1,10 @@
-package designer.panels;
+package designer.ui;
 
-import designer.types.ExRSyntaxTextArea;
+import designer.ui.componants.ExRSyntaxTextArea;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 
 public class CodeViewPanel extends JPanel {
     private final ExRSyntaxTextArea area;

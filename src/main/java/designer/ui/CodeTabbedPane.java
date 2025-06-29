@@ -1,15 +1,13 @@
-package designer.panels;
+package designer.ui;
 
 import designer.SwingDesignerApp;
-import designer.misc.ResourceUtil;
+import designer.util.ResourceUtil;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
 public class CodeTabbedPane extends JPanel {
     private final CodeViewPanel designerView;
@@ -99,6 +97,16 @@ public class CodeTabbedPane extends JPanel {
     public String getUserCode()
     {
         return codeView.getCode();
+    }
+
+    public void setDesignerCode(String code)
+    {
+        designerView.setCode(code);
+    }
+
+    public void setUserCode(String code)
+    {
+        codeView.setCode(code);
     }
 
     /** Designer (0) or User-code (1) */

@@ -1,6 +1,6 @@
-package designer.editors;
+package designer.ui.editors;
 
-import designer.misc.PopupMenuManager;
+import designer.util.PopupMenuManager;
 
 import javax.swing.*;
 import java.awt.*;

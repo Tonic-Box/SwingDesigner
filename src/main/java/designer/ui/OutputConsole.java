@@ -1,4 +1,4 @@
-package designer.panels;
+package designer.ui;
 
 import javax.swing.*;
 import javax.swing.text.*;
