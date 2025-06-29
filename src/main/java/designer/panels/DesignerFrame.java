@@ -225,7 +225,6 @@ public class DesignerFrame extends JFrame {
 
     /** Load a project JSON and rebuild the surface from it. */
     private void openProject() {
-        designerView.setCode("");
         fileChooser.setCurrentDirectory(lastDirectory);
         fileChooser.setDialogTitle("Open Project");
 
