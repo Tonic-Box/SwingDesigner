@@ -104,16 +104,31 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 Point origin = SwingUtilities.convertPoint(host, 0, 0, this);
                 int w = host.getWidth(), h = host.getHeight();
 
+                List<Rectangle> children = new ArrayList<>();
+                for (Component c : host.getComponents()) {
+                    if (c instanceof JComponent jc) {
+                        Rectangle r = SwingUtilities.convertRectangle(
+                                jc.getParent(), jc.getBounds(), this
+                        );
+                        children.add(r);
+                    }
+                }
+
                 // compute the selection rect in this panel’s coords
-                Rectangle selRect = SwingUtilities.convertRectangle(
-                        host, selectedComp.getBounds(), this
-                );
+//                Rectangle selRect = SwingUtilities.convertRectangle(
+//                        host, selectedComp.getBounds(), this
+//                );
 
                 Graphics2D g2 = (Graphics2D) g.create();
                 try {
                     // build a clip region: host bounds MINUS the selRect
                     Area clip = new Area(new Rectangle(origin.x, origin.y, w, h));
-                    clip.subtract(new Area(selRect));
+                    for(Rectangle r : children) {
+                        if (r.intersects(origin.x, origin.y, w, h)) {
+                            clip.subtract(new Area(r));
+                        }
+                    }
+                    //clip.subtract(new Area(selRect));
                     g2.setClip(clip);
 
                     g2.setColor(gridColor);
