@@ -19,7 +19,6 @@ import java.util.List;
 public class DesignerFrame extends JFrame {
     private File currentFile;
     private File lastDirectory;
-    private final JScrollPane consoleScrollPane;
     private final JFileChooser fileChooser;
     private final ObjectMapper mapper = new ObjectMapper();
     private DesignSurfacePanel designSurface;
@@ -149,7 +148,7 @@ public class DesignerFrame extends JFrame {
         outerSplit.setDividerLocation(900);
         outerSplit.setResizeWeight(1.0);
 
-        consoleScrollPane = OutputConsole.generateConsoleScrollPane();
+        JScrollPane consoleScrollPane = OutputConsole.generateConsoleScrollPane();
         JSplitPane verticalSplitPane = new JSplitPane(
                 JSplitPane.VERTICAL_SPLIT, outerSplit, consoleScrollPane
         );
