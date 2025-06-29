@@ -444,6 +444,11 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 sb.append(id).append(".setAutoscrolls(true);\n");
             }
 
+            if(!jc.isEnabled())
+            {
+                sb.append(id).append(".setEnabled(false);\n");
+            }
+
             Border border = jc.getBorder();
             String data = borderExpr(border);
             if (border != null && !data.isEmpty()) {
@@ -665,6 +670,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         data.className         = cont.getClass().getName();
         if (cont instanceof JComponent jc) {
             data.name           = jc.getName();
+            data.visible        = jc.isVisible();
             if (jc instanceof AbstractButton ab) {
                 data.text = ab.getText();
             }
@@ -732,6 +738,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             JComponent comp = (JComponent)cls.getDeclaredConstructor().newInstance();
             // basic props
             comp.setName(cd.name);
+            comp.setVisible(cd.visible);
             comp.setBounds(cd.bounds.toRectangle());
             comp.setPreferredSize(cd.preferredSize.toDimension());
             comp.setMinimumSize(cd.minimumSize.toDimension());

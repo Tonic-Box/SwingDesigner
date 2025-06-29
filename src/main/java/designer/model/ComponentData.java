@@ -11,6 +11,7 @@ public class ComponentData {
     public String className;
     public String name;
     public String text;
+    public boolean visible;
     // geometry
     public RectangleData bounds;
     public SizeData     preferredSize;
