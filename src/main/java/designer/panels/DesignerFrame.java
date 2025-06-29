@@ -36,6 +36,7 @@ public class DesignerFrame extends JFrame {
     private final JTabbedPane leftTabs;
     private ComponentHierarchyPanel hierarchyPanel;
     private final JTabbedPane centerTabs;
+    private final CodeTabbedPane codeTabs;
 
     public DesignerFrame() {
         super("Swing Visual Designer");
@@ -49,7 +50,6 @@ public class DesignerFrame extends JFrame {
         inspector     = new PropertyInspectorPanel(designSurface);
         designerView = new CodeViewPanel();
         codeView = new CodeViewPanel();
-        preview       = new PreviewPanel(designSurface);
 
         // init chooser
         lastDirectory = new File(System.getProperty("user.home"));
@@ -146,8 +146,9 @@ public class DesignerFrame extends JFrame {
         mainSplit.setDividerLocation(260);
         mainSplit.setResizeWeight(0.0);
 
-        CodeTabbedPane codeTabs = new CodeTabbedPane(designerView, codeView);
-        codeTabs.onRun(e -> compileAndApply(designerView.getCode(), codeView.getCode()));
+        codeTabs = new CodeTabbedPane(designerView, codeView);
+        preview       = new PreviewPanel(designSurface, codeTabs);
+        codeTabs.onRun(e -> compileAndApply(designSurface, designerView.getCode(),null));
         JSplitPane outerSplit = new JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT, mainSplit, codeTabs
         );
@@ -168,7 +169,7 @@ public class DesignerFrame extends JFrame {
      * 3) Load it with a URLClassLoader
      * 4) Call its static apply(DesignSurfacePanel) method to mutate your live surface
      */
-    private void compileAndApply(String designCode, String userCode) {
+    public static void compileAndApply(JPanel panel, String designCode, String userCode) {
         try {
             String className = "LiveDesign";
             // 1) Build full source with imports, reusing the existing root panel
@@ -187,18 +188,16 @@ public class DesignerFrame extends JFrame {
                             "import java.util.concurrent.atomic.AtomicInteger;\n" +
                             "import java.util.stream.Collectors;\n" +
                             "public class " + className + " {\n" +
-                            "  public static void apply(DesignSurfacePanel ds) throws Exception {\n" +
+                            "  public static void apply(JPanel ds) throws Exception {\n" +
                             "    // reuse the existing designer panel as our root\n" +
                             "    JPanel panel = ds;\n" +
                             "    // clear out any old children\n" +
                             "    panel.removeAll();\n" +
                             // insert the user's layout code directly into the existing panel
                             designCode.replace("JPanel panel = new JPanel();", "") + "\n" +
-                            userCode + "\n" +
+                            (userCode == null ? "" : userCode + "\n") +
                             "    // refresh display\n" +
                             "    panel.revalidate(); panel.repaint();\n" +
-                            "    // fire design changed so hierarchy & inspector update\n" +
-                            "    ds.externalPropertyChanged();\n" +
                             "  }\n" +
                             "}\n";
 
@@ -226,17 +225,20 @@ public class DesignerFrame extends JFrame {
             // 3) Load the compiled class and invoke apply(ds)
             try (URLClassLoader loader = new URLClassLoader(
                     new URL[]{ tmpDir.toURI().toURL() },
-                    this.getClass().getClassLoader()
+                    panel.getClass().getClassLoader()
             )) {
                 Class<?> liveCls = Class.forName(className, true, loader);
-                Method m = liveCls.getMethod("apply", DesignSurfacePanel.class);
-                m.invoke(null, designSurface);
+                Method m = liveCls.getMethod("apply", JPanel.class);
+                m.invoke(null, panel);
+                if( panel instanceof DesignSurfacePanel designPanel) {
+                    designPanel.externalPropertyChanged();  // ensure the design surface is refreshed
+                }
             }
 
         } catch (Throwable ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(
-                    this,
+                    panel,
                     "Run failed: " + ex.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE
@@ -248,7 +250,6 @@ public class DesignerFrame extends JFrame {
     private void setupListenersAndBindings() {
         designSurface.addSelectionListener(inspector::setTarget);
         designSurface.addDesignChangeListener(() -> {
-            preview.refresh();
             designerView.setCode(designSurface.generateCode());
             //codeView.setCode(designSurface.generateCode());
         });
@@ -269,7 +270,7 @@ public class DesignerFrame extends JFrame {
         designerView.setCode("");
         codeView.setCode("");
         designSurface = new DesignSurfacePanel();
-        preview       = new PreviewPanel(designSurface);
+        preview       = new PreviewPanel(designSurface, codeTabs);
 
         centerTabs.setComponentAt(0, designSurface);
         centerTabs.setComponentAt(1, preview);
@@ -347,10 +348,9 @@ public class DesignerFrame extends JFrame {
 
             hierarchyPanel.designChanged();
 
-            preview = new PreviewPanel(designSurface);
+            preview = new PreviewPanel(designSurface, codeTabs);
             centerTabs.setComponentAt(1, preview);
             setupListenersAndBindings();
-            preview.refresh();
             designerView.setCode(designSurface.generateCode());
         } catch (Exception ex) {
             ex.printStackTrace();

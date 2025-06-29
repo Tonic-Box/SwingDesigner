@@ -3,78 +3,31 @@ package designer.panels;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.beans.BeanInfo;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Constructor;
 
 public class PreviewPanel extends JPanel {
     private final DesignSurfacePanel designSurface;
+    private final CodeTabbedPane codeView;
     private final JPanel canvas = new JPanel(null);
-    public PreviewPanel(DesignSurfacePanel ds){
+    public PreviewPanel(DesignSurfacePanel ds, CodeTabbedPane codeView){
         super(new BorderLayout());
         this.designSurface=ds;
+        this.codeView = codeView;
 
-        designSurface.addDesignChangeListener(this::refresh);
+        codeView.onRun((a) -> {
+            refresh();
+        });
 
         setPreferredSize(new Dimension(380,0));
         setBorder(new EmptyBorder(5,5,5,5));
         //add(new JLabel("Live Preview",SwingConstants.CENTER), BorderLayout.NORTH);
         add(new JScrollPane(canvas), BorderLayout.CENTER);
-        refresh();
     }
     public void refresh() {
         canvas.removeAll();
         canvas.setBackground(designSurface.getBackground());
         canvas.setLayout(designSurface.getLayout());
-        try { cloneInto(designSurface, canvas); }
+        try { DesignerFrame.compileAndApply(this, codeView.getDesignerCode(), codeView.getUserCode()); }
         catch (Exception ex) { ex.printStackTrace(); }
         canvas.revalidate(); canvas.repaint();
-    }
-
-    /* deep copy subtree */
-    private void cloneInto(Container src, Container dst) throws Exception {
-        for (Component child : src.getComponents()) {
-            Component copy = cloneComponent(child);
-
-            if (child instanceof JComponent srcJC && copy instanceof JComponent dstJC) {
-                JPopupMenu pm = srcJC.getComponentPopupMenu();
-                if (pm != null) {
-                    dstJC.setComponentPopupMenu(pm);
-                }
-            }
-
-            LayoutManager lm = dst.getLayout();
-            if (lm instanceof BorderLayout) {
-                Object cons = ((JComponent)child).getClientProperty("layoutConstraint");
-                String cstr = cons!=null ? cons.toString() : BorderLayout.CENTER;
-                dst.add(copy, cstr);
-            } else {
-                dst.add(copy);
-            }
-            if (child instanceof Container sc && copy instanceof Container dc) {
-                cloneInto(sc, dc);
-            }
-        }
-    }
-
-    private Component cloneComponent(Component original) throws Exception {
-        Constructor<?> ctor = original.getClass().getConstructor();
-        Component copy = (Component) ctor.newInstance();
-        copy.setBounds(original.getBounds());
-        BeanInfo info = Introspector.getBeanInfo(original.getClass(),Object.class);
-        for(PropertyDescriptor pd:info.getPropertyDescriptors()){
-            if(pd.getReadMethod()!=null && pd.getWriteMethod()!=null){
-                try{ pd.getWriteMethod().invoke(copy, pd.getReadMethod().invoke(original)); }
-                catch(Exception ignored){}
-            }
-        }
-        if (original instanceof JComponent origJC && copy instanceof JComponent copyJC) {
-            Object maybe = origJC.getClientProperty("savedPopup");
-            if (maybe instanceof JPopupMenu pm) {
-                copyJC.setComponentPopupMenu(pm);
-            }
-        }
-        return copy;
     }
 }

@@ -91,6 +91,16 @@ public class CodeTabbedPane extends JPanel {
         this.runListener = l;
     }
 
+    public String getDesignerCode()
+    {
+        return designerView.getCode();
+    }
+
+    public String getUserCode()
+    {
+        return codeView.getCode();
+    }
+
     /** Designer (0) or User-code (1) */
     public CodeViewPanel getCodeViewAt(int idx) {
         if (idx == 0) return designerView;
