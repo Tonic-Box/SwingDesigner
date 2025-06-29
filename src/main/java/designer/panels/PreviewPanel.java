@@ -1,5 +1,7 @@
 package designer.panels;
 
+import designer.misc.CodeManager;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -26,7 +28,7 @@ public class PreviewPanel extends JPanel {
         canvas.removeAll();
         canvas.setBackground(designSurface.getBackground());
         canvas.setLayout(designSurface.getLayout());
-        try { DesignerFrame.compileAndApply(this, codeView.getDesignerCode(), codeView.getUserCode()); }
+        try { CodeManager.compileAndApply(this, codeView); }
         catch (Exception ex) { ex.printStackTrace(); }
         canvas.revalidate(); canvas.repaint();
     }
