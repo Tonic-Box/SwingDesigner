@@ -1,7 +1,8 @@
 package designer;
 
 import com.formdev.flatlaf.FlatDarkLaf;
-import designer.panels.DesignerFrame;
+import designer.ui.DesignerFrame;
+import designer.util.Static;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +16,8 @@ public class SwingDesignerApp {
         FlatDarkLaf.setup();
         SwingUtilities.invokeLater(() -> {
             applyDarkDefaults();
-            new DesignerFrame().setVisible(true);
+            Static.designerFrame = new DesignerFrame();
+            Static.designerFrame.setVisible(true);
         });
     }
 

@@ -1,4 +1,4 @@
-package designer.misc;
+package designer.util;
 
 import javax.swing.*;
 import java.util.LinkedHashMap;

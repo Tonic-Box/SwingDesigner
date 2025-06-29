@@ -1,8 +1,8 @@
-package designer.misc;
+package designer.util;
 
-import designer.panels.CodeTabbedPane;
-import designer.panels.DesignSurfacePanel;
-import designer.panels.OutputConsole;
+import designer.ui.CodeTabbedPane;
+import designer.ui.DesignSurfacePanel;
+import designer.ui.OutputConsole;
 import designer.types.PositionType;
 
 import javax.swing.*;
@@ -35,7 +35,7 @@ public class CodeManager
             String className = "LiveDesign";
             // 1) Build full source with imports, reusing the existing root panel
             String src =
-                    "import designer.panels.DesignSurfacePanel;\n" +
+                    "import designer.ui.DesignSurfacePanel;\n" +
                             "import javax.swing.*;\n" +
                             "import java.awt.*;\n" +
                             "import java.awt.datatransfer.DataFlavor;\n" +

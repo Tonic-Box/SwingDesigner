@@ -1,6 +1,6 @@
-package designer.panels;
+package designer.ui;
 
-import designer.misc.CodeManager;
+import designer.util.CodeManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

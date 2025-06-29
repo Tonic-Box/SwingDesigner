@@ -1,6 +1,6 @@
-package designer.panels;
+package designer.ui;
 
-import designer.misc.ComponentTreeCellRenderer;
+import designer.ui.componants.ComponentTreeCellRenderer;
 
 import javax.swing.*;
 import javax.swing.tree.*;

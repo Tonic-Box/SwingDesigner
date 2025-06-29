@@ -1,4 +1,4 @@
-package designer.misc;
+package designer.util;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

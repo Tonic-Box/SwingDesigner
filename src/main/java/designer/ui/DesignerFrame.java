@@ -1,36 +1,16 @@
-package designer.panels;
+package designer.ui;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import designer.SwingDesignerApp;
-import designer.misc.CodeManager;
-import designer.misc.PopupMenuManager;
-import designer.misc.ResourceUtil;
-import designer.model.MenuItemData;
-import designer.model.PopupMenuData;
-import designer.model.ProjectData;
+import designer.util.CodeManager;
+import designer.util.ResourceUtil;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import static designer.util.ProjectIO.*;
+import static designer.util.Static.*;
 
 public class DesignerFrame extends JFrame {
-    private File currentFile;
-    private File lastDirectory;
-    private final JFileChooser fileChooser;
-    private final ObjectMapper mapper = new ObjectMapper();
-    private DesignSurfacePanel designSurface;
-    private final PropertyInspectorPanel inspector;
-    public final CodeViewPanel codeView;
-    public final CodeViewPanel designerView;
-    private PreviewPanel preview;
-    private final JTabbedPane leftTabs;
-    private ComponentHierarchyPanel hierarchyPanel;
-    private final JTabbedPane centerTabs;
-    private final CodeTabbedPane codeTabs;
-
     public DesignerFrame() {
         super("Swing Visual Designer");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -41,12 +21,8 @@ public class DesignerFrame extends JFrame {
         // initialize panels
         designSurface = new DesignSurfacePanel();
         inspector     = new PropertyInspectorPanel(designSurface);
-        designerView = new CodeViewPanel();
-        codeView = new CodeViewPanel();
-
-        // init chooser
-        lastDirectory = new File(System.getProperty("user.home"));
-        fileChooser   = new JFileChooser(lastDirectory);
+        CodeViewPanel designerView = new CodeViewPanel();
+        CodeViewPanel codeView = new CodeViewPanel();
 
         // ─── MENU BAR ───────────────────────────────────────────────
         JMenuBar menuBar = new JMenuBar();
@@ -164,9 +140,9 @@ public class DesignerFrame extends JFrame {
     }
 
     /** Wire up all your listeners and keybindings. */
-    private void setupListenersAndBindings() {
+    public void setupListenersAndBindings() {
         designSurface.addSelectionListener(inspector::setTarget);
-        designSurface.addDesignChangeListener(() -> designerView.setCode(CodeManager.generateCode(designSurface)));
+        designSurface.addDesignChangeListener(() -> codeTabs.setDesignerCode(CodeManager.generateCode(designSurface)));
 
         // keybindings…
         InputMap  im = designSurface.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -177,95 +153,5 @@ public class DesignerFrame extends JFrame {
                 designSurface.removeSelected();
             }
         });
-    }
-
-    /** Clears everything to start a brand-new project. */
-    private void newProject() {
-        designerView.setCode("");
-        codeView.setCode("");
-        designSurface = new DesignSurfacePanel();
-        preview       = new PreviewPanel(designSurface, codeTabs);
-
-        centerTabs.setComponentAt(0, designSurface);
-        centerTabs.setComponentAt(1, preview);
-
-        hierarchyPanel = new ComponentHierarchyPanel(designSurface);
-        leftTabs.setComponentAt(1, hierarchyPanel);
-
-        inspector.setLayout(new BorderLayout());        // hack: re-create inspector
-        // you may want to rebuild the hierarchy tab as well…
-
-        setupListenersAndBindings();
-        currentFile = null;
-        designerView.setCode(CodeManager.generateCode(designSurface));
-    }
-
-    private void saveProject() {
-        fileChooser.setCurrentDirectory(lastDirectory);
-        fileChooser.setDialogTitle("Save Project");
-        fileChooser.setSelectedFile(currentFile);
-
-        if (fileChooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
-
-        File chosen = fileChooser.getSelectedFile();
-        lastDirectory = chosen.getParentFile();   // remember for next time
-        currentFile   = chosen;
-
-        try {
-            ProjectData proj = designSurface.exportProject(this);
-            mapper.writerWithDefaultPrettyPrinter()
-                    .writeValue(currentFile, proj);
-            OutputConsole.info("Saved project as '" + currentFile.getName() + "'");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            OutputConsole.error("Save failed: " + ex.getMessage());
-        }
-    }
-
-    /** Load a project JSON and rebuild the surface from it. */
-    private void openProject() {
-        fileChooser.setCurrentDirectory(lastDirectory);
-        fileChooser.setDialogTitle("Open Project");
-
-        if (fileChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
-
-        newProject();
-
-        File chosen = fileChooser.getSelectedFile();
-        lastDirectory = chosen.getParentFile();   // remember for next time
-        currentFile   = chosen;
-
-        try {
-            ProjectData proj = mapper.readValue(currentFile, ProjectData.class);
-
-            // --- NEW: rebuild PopupMenuManager from the saved data ---
-            List<String> menuNames = new ArrayList<>(PopupMenuManager.getMenuNames());
-            for (String name : menuNames) {
-                PopupMenuManager.removeMenu(name);
-            }
-            for (PopupMenuData pmData : proj.popupMenus) {
-                JPopupMenu menu = new JPopupMenu();
-                for (MenuItemData miData : pmData.items) {
-                    JMenuItem item = new JMenuItem(miData.text);
-                    item.setActionCommand(miData.actionCommand);
-                    menu.add(item);
-                }
-                PopupMenuManager.putMenu(pmData.name, menu);
-            }
-
-            codeView.setCode(proj.userCode);
-            designSurface.importProject(proj);
-
-            hierarchyPanel.designChanged();
-
-            preview = new PreviewPanel(designSurface, codeTabs);
-            centerTabs.setComponentAt(1, preview);
-            setupListenersAndBindings();
-            designerView.setCode(CodeManager.generateCode(designSurface));
-            OutputConsole.info("Opened project '" + currentFile.getName() + "'");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            OutputConsole.error("Open failed: " + ex.getMessage());
-        }
     }
 }
