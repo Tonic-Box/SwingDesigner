@@ -376,6 +376,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             popup.addSeparator();
 
             JMenu alignMenu = new JMenu("Align");
+
             JMenuItem alignLeft = new JMenuItem("Left");
             alignLeft.addActionListener(e -> {
                 Rectangle r = target.getBounds();
@@ -384,6 +385,35 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 notifyChange();
             });
             alignMenu.add(alignLeft);
+
+            JMenuItem alignRight = new JMenuItem("Right");
+            alignRight.addActionListener(e -> {
+                Rectangle r = target.getBounds();
+                int parentW = target.getParent().getWidth();
+                r.x = parentW - r.width;
+                target.setBounds(r);
+                notifyChange();
+            });
+            alignMenu.add(alignRight);
+
+            JMenuItem alignTop = new JMenuItem("Top");
+            alignTop.addActionListener(e -> {
+                Rectangle r = target.getBounds();
+                r.y = 0;
+                target.setBounds(r);
+                notifyChange();
+            });
+            alignMenu.add(alignTop);
+
+            JMenuItem alignBottom = new JMenuItem("Bottom");
+            alignBottom.addActionListener(e -> {
+                Rectangle r = target.getBounds();
+                int parentH = target.getParent().getHeight();
+                r.y = parentH - r.height;
+                target.setBounds(r);
+                notifyChange();
+            });
+            alignMenu.add(alignBottom);
 
             JMenuItem alignCenter = new JMenuItem("Center Horizontally");
             alignCenter.addActionListener(e -> {
@@ -394,6 +424,16 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 notifyChange();
             });
             alignMenu.add(alignCenter);
+
+            JMenuItem alignMiddle = new JMenuItem("Center Vertically");
+            alignMiddle.addActionListener(e -> {
+                Rectangle r = target.getBounds();
+                int parentH = target.getParent().getHeight();
+                r.y = (parentH - r.height) / 2;
+                target.setBounds(r);
+                notifyChange();
+            });
+            alignMenu.add(alignMiddle);
 
             popup.add(alignMenu);
         }
@@ -407,6 +447,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         @Override
         public void mousePressed(MouseEvent e) {
             maybeShowPopup(e);
+
             LayoutManager lm = target.getParent().getLayout();
             if (lm == null) {
                 Rectangle r = target.getBounds();
@@ -469,6 +510,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
         @Override
         public void mouseDragged(MouseEvent e) {
+
             if (dragOffset == null || lockComponents) {
                 return;
             }
