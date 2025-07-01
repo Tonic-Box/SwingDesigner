@@ -9,13 +9,12 @@ import javax.swing.text.Utilities;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class CodeViewPanel extends JPanel {
     private final ExRSyntaxTextArea area;
     private MouseAdapter workClickListener = null;
-    private Consumer<String> onWordClick;
+    private Predicate<String> onWordClick;
     private final JScrollPane scrollPane;
 
     public CodeViewPanel(){
@@ -34,7 +33,7 @@ public class CodeViewPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    public void setOnWordClick(Consumer<String> callback) {
+    public void setOnWordClick(Predicate<String> callback) {
         if( workClickListener != null) {
             area.removeMouseListener(workClickListener);
         }
@@ -56,8 +55,10 @@ public class CodeViewPanel extends JPanel {
 
                     if (onWordClick != null && !word.trim().isEmpty()) {
                         String sub = word.split("\\.")[0];
-                        onWordClick.accept(sub);
-                        area.select(wordStart, wordStart + sub.length());
+                        if(onWordClick.test(sub))
+                        {
+                            area.select(wordStart, wordStart + sub.length());
+                        }
                     }
                 } catch (BadLocationException ex) {
                     OutputConsole.error("Error getting word at mouse click: " + ex);
