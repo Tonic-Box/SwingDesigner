@@ -587,13 +587,14 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
      * If a matching component is found anywhere in the subtree, it becomes
      * the selectedComp and all listeners + repaints fire. Otherwise selection is cleared.
      */
-    public void selectComponentByName(String name) {
+    public boolean selectComponentByName(String name) {
         JComponent found = findComponentByName(this, name);
         if (found != null) {
             selectComponent(found);
         } else {
             clearSelection();
         }
+        return found != null;
     }
 
     /**
