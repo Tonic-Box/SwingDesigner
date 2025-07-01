@@ -376,6 +376,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             popup.addSeparator();
 
             JMenu alignMenu = new JMenu("Align");
+
             JMenuItem alignLeft = new JMenuItem("Left");
             alignLeft.addActionListener(e -> {
                 Rectangle r = target.getBounds();
@@ -384,6 +385,35 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 notifyChange();
             });
             alignMenu.add(alignLeft);
+
+            JMenuItem alignRight = new JMenuItem("Right");
+            alignRight.addActionListener(e -> {
+                Rectangle r = target.getBounds();
+                int parentW = target.getParent().getWidth();
+                r.x = parentW - r.width;
+                target.setBounds(r);
+                notifyChange();
+            });
+            alignMenu.add(alignRight);
+
+            JMenuItem alignTop = new JMenuItem("Top");
+            alignTop.addActionListener(e -> {
+                Rectangle r = target.getBounds();
+                r.y = 0;
+                target.setBounds(r);
+                notifyChange();
+            });
+            alignMenu.add(alignTop);
+
+            JMenuItem alignBottom = new JMenuItem("Bottom");
+            alignBottom.addActionListener(e -> {
+                Rectangle r = target.getBounds();
+                int parentH = target.getParent().getHeight();
+                r.y = parentH - r.height;
+                target.setBounds(r);
+                notifyChange();
+            });
+            alignMenu.add(alignBottom);
 
             JMenuItem alignCenter = new JMenuItem("Center Horizontally");
             alignCenter.addActionListener(e -> {
@@ -394,6 +424,16 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 notifyChange();
             });
             alignMenu.add(alignCenter);
+
+            JMenuItem alignMiddle = new JMenuItem("Center Vertically");
+            alignMiddle.addActionListener(e -> {
+                Rectangle r = target.getBounds();
+                int parentH = target.getParent().getHeight();
+                r.y = (parentH - r.height) / 2;
+                target.setBounds(r);
+                notifyChange();
+            });
+            alignMenu.add(alignMiddle);
 
             popup.add(alignMenu);
         }
@@ -407,6 +447,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
         @Override
         public void mousePressed(MouseEvent e) {
             maybeShowPopup(e);
+
             LayoutManager lm = target.getParent().getLayout();
             if (lm == null) {
                 Rectangle r = target.getBounds();
@@ -469,6 +510,7 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
 
         @Override
         public void mouseDragged(MouseEvent e) {
+
             if (dragOffset == null || lockComponents) {
                 return;
             }
@@ -526,5 +568,47 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
                 target.setCursor(Cursor.getDefaultCursor());
             }
         }
+    }
+
+    public void selectComponent(JComponent comp) {
+        // 1) set the target
+        this.selectedComp = comp;
+        // 2) notify selection listeners
+        notifySelection(comp);
+        // 3) since selection is a visual change, also treat it as a design change
+        notifyChange();
+        // 4) ensure the UI updates
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Programmatically select a component by its name.
+     * If a matching component is found anywhere in the subtree, it becomes
+     * the selectedComp and all listeners + repaints fire. Otherwise selection is cleared.
+     */
+    public void selectComponentByName(String name) {
+        JComponent found = findComponentByName(this, name);
+        if (found != null) {
+            selectComponent(found);
+        } else {
+            clearSelection();
+        }
+    }
+
+    /**
+     * Recursive search for a JComponent with the given name.
+     */
+    private JComponent findComponentByName(Container parent, String name) {
+        for (Component c : parent.getComponents()) {
+            if (c instanceof JComponent jc) {
+                if (name.equals(jc.getName())) {
+                    return jc;
+                }
+                JComponent child = findComponentByName(jc, name);
+                if (child != null) return child;
+            }
+        }
+        return null;
     }
 }

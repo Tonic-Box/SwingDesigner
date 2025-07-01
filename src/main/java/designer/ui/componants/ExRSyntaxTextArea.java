@@ -4,15 +4,12 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaHighlighter;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Theme;
-import javax.swing.event.DocumentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 
 public class ExRSyntaxTextArea extends RSyntaxTextArea
 {
-    private DocumentListener scriptListener;
-
     public ExRSyntaxTextArea(int rows, int cols) {
         super(rows, cols);
 
