@@ -569,4 +569,46 @@ public class DesignSurfacePanel extends JPanel implements DropTargetListener {
             }
         }
     }
+
+    public void selectComponent(JComponent comp) {
+        // 1) set the target
+        this.selectedComp = comp;
+        // 2) notify selection listeners
+        notifySelection(comp);
+        // 3) since selection is a visual change, also treat it as a design change
+        notifyChange();
+        // 4) ensure the UI updates
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Programmatically select a component by its name.
+     * If a matching component is found anywhere in the subtree, it becomes
+     * the selectedComp and all listeners + repaints fire. Otherwise selection is cleared.
+     */
+    public void selectComponentByName(String name) {
+        JComponent found = findComponentByName(this, name);
+        if (found != null) {
+            selectComponent(found);
+        } else {
+            clearSelection();
+        }
+    }
+
+    /**
+     * Recursive search for a JComponent with the given name.
+     */
+    private JComponent findComponentByName(Container parent, String name) {
+        for (Component c : parent.getComponents()) {
+            if (c instanceof JComponent jc) {
+                if (name.equals(jc.getName())) {
+                    return jc;
+                }
+                JComponent child = findComponentByName(jc, name);
+                if (child != null) return child;
+            }
+        }
+        return null;
+    }
 }

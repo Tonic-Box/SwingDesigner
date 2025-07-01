@@ -2,6 +2,7 @@ package designer.ui;
 
 import designer.SwingDesignerApp;
 import designer.util.ResourceUtil;
+import designer.util.Static;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +24,9 @@ public class CodeTabbedPane extends JPanel {
     public CodeTabbedPane(CodeViewPanel designer, CodeViewPanel code) {
         super(new BorderLayout());
         this.designerView = designer;
+        designer.setEditable(false);
+        designer.setSelectionColor(new Color(0xFFEA00), Color.BLACK);
+        designer.setOnWordClick(s -> Static.designSurface.selectComponentByName(s));
         this.codeView     = code;
 
         // 1) content area
